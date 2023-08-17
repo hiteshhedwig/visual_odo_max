@@ -26,14 +26,24 @@ class MatrixOperations(object):
         self.matrix = matrix
         return self.matrix
     
-    def __add__(self, other):
-        # assert other.get_shape() == self.get_matrix()
+    def sanity_check(self, other):
         if other.get_shape() == self.get_shape():
             print("matrix check okay ", self.get_shape())
         else:
             raise ValueError(f"matrix check failed - {self.get_shape()} != {other.get_shape()}")
-                              
+    
+    def __add__(self, other):
+        self.sanity_check(other)
+
         added_matrix = other.get_matrix() + self.get_matrix()
+        final_matrix = MatrixOperations(self.rows, self.cols)
+        final_matrix.set_matrix(added_matrix)
+        return final_matrix
+    
+    def __sub__(self, other):
+        self.sanity_check(other)
+                      
+        added_matrix = self.get_matrix() - other.get_matrix() 
         final_matrix = MatrixOperations(self.rows, self.cols)
         final_matrix.set_matrix(added_matrix)
         return final_matrix
@@ -45,5 +55,5 @@ if __name__ == '__main__':
     mat_2 = MatrixOperations(4,3)
     print("MAT 2 ", mat_2.get_matrix())
 
-    mat_3 = mat_1 + mat_2   
+    mat_3 = mat_1 - mat_2   
     print(mat_3.get_matrix())
