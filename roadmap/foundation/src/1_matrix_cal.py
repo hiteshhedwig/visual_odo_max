@@ -26,14 +26,21 @@ class MatrixOperations(object):
         self.matrix = matrix
         return self.matrix
     
-    def sanity_check(self, other):
-        if other.get_shape() == self.get_shape():
-            print("matrix check okay ", self.get_shape())
-        else:
-            raise ValueError(f"matrix check failed - {self.get_shape()} != {other.get_shape()}")
-    
+    def sanity_check(self, other, ops):
+        if ops in ["+", "-"]:
+            if other.get_shape() == self.get_shape():
+                print(f"matrix check okay for {ops}", self.get_shape())
+            else:
+                raise ValueError(f"matrix check failed for {ops} - {self.get_shape()} != {other.get_shape()}")
+        
+        if ops in ["*"]:
+            if self.cols == other.rows :
+                print(f"matrix check okay for {ops}")
+            else :
+                raise ValueError(f"matrix check failed for operation : {ops} shapes : {self.get_shape()} * {other.get_shape()}. ERROR : {self.cols} != {other.rows}")
+
     def __add__(self, other):
-        self.sanity_check(other)
+        self.sanity_check(other,"+")
 
         added_matrix = other.get_matrix() + self.get_matrix()
         final_matrix = MatrixOperations(self.rows, self.cols)
@@ -41,19 +48,28 @@ class MatrixOperations(object):
         return final_matrix
     
     def __sub__(self, other):
-        self.sanity_check(other)
+        self.sanity_check(other, "-")
                       
         added_matrix = self.get_matrix() - other.get_matrix() 
         final_matrix = MatrixOperations(self.rows, self.cols)
         final_matrix.set_matrix(added_matrix)
         return final_matrix
+    
+    def __mul__(self, other):
+        self.sanity_check(other, "*")
+
+        added_matrix = self.get_matrix() @ other.get_matrix() 
+        final_matrix = MatrixOperations(self.rows, self.cols)
+        final_matrix.set_matrix(added_matrix)
+        return final_matrix
+
 
     
 if __name__ == '__main__':
-    mat_1 = MatrixOperations(4,3)
+    mat_1 = MatrixOperations(2,3)
     print("MAT 1 " , mat_1.get_matrix())
-    mat_2 = MatrixOperations(4,3)
+    mat_2 = MatrixOperations(3,2)
     print("MAT 2 ", mat_2.get_matrix())
 
-    mat_3 = mat_1 - mat_2   
+    mat_3 = mat_1 * mat_2   
     print(mat_3.get_matrix())
