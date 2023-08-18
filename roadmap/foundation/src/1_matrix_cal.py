@@ -24,7 +24,7 @@ class MatrixOperations(object):
     
     def set_matrix(self,matrix):
         self.matrix = matrix
-        return self.matrix
+        return self
     
     def sanity_check(self, other, ops):
         if ops in ["+", "-"]:
@@ -43,25 +43,22 @@ class MatrixOperations(object):
         self.sanity_check(other,"+")
 
         added_matrix = other.get_matrix() + self.get_matrix()
-        final_matrix = MatrixOperations(self.rows, self.cols)
-        final_matrix.set_matrix(added_matrix)
-        return final_matrix
+
+        return MatrixOperations(self.rows, self.cols).set_matrix(added_matrix)
     
     def __sub__(self, other):
         self.sanity_check(other, "-")
                       
-        added_matrix = self.get_matrix() - other.get_matrix() 
-        final_matrix = MatrixOperations(self.rows, self.cols)
-        final_matrix.set_matrix(added_matrix)
-        return final_matrix
+        sub_matrix = self.get_matrix() - other.get_matrix() 
+
+        return MatrixOperations(self.rows, self.cols).set_matrix(sub_matrix)
     
     def __mul__(self, other):
         self.sanity_check(other, "*")
 
-        added_matrix = self.get_matrix() @ other.get_matrix() 
-        final_matrix = MatrixOperations(self.rows, self.cols)
-        final_matrix.set_matrix(added_matrix)
-        return final_matrix
+        mul_matrix = self.get_matrix() @ other.get_matrix() 
+
+        return MatrixOperations(self.rows, self.cols).set_matrix(mul_matrix)
 
 
     
