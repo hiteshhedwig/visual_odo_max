@@ -22,12 +22,11 @@ def main():
 
     eigenvalues = []
     eigenvectors = []
+    ## compute covariance matrix
     cov_mat, mean_adjusted_array = compute_covariance_matrix(images_1D)
 
     if not load_from_cache:
-        ## compute covariance matrix
         print(cov_mat.shape)
-
         # ## eigenvectors, values
         print("processing eigenvectors")
         eigenvectors, eigenvalues = eigen_decomposition(cov_mat)
@@ -45,11 +44,9 @@ def main():
     print("top k values eigenvalues_k used ", eigenvalues_k.shape)
     print("top k values eigenvectors_k used ", eigenvectors_k.shape)
 
-
     # Assuming you've already computed eigenvectors_k somewhere earlier
     projected_all_data = projected_data(eigenvectors_k, mean_adjusted_array)
     print("projected_eigenvector used ", projected_all_data.shape)
-
 
     ### what you have done so far is PCA
 
