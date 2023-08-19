@@ -5,6 +5,18 @@ import os
 import cupy as cp
 
 def load_yale_faces_dataset(path):
+    """
+    The function `load_yale_faces_dataset` loads images from a directory, resizes them to a specific
+    size, and extracts labels from the filenames.
+    
+    :param path: The path parameter is the directory path where the Yale Faces dataset is stored. This
+    function loads the images from the dataset and returns two arrays: images and labels. The images
+    array contains the loaded images, and the labels array contains the corresponding labels (person's
+    ID) for each image
+    :return: The function load_yale_faces_dataset returns two numpy arrays: images and labels. The
+    images array contains the loaded images from the specified path, while the labels array contains the
+    corresponding labels (person's ID) for each image.
+    """
     images = []
     labels = []
     
@@ -33,12 +45,28 @@ def load_yale_faces_dataset(path):
     return np.array(images), np.array(labels)
 
 def convert_image_to_1D(images_array):
+    """
+    The function `convert_image_to_1D` takes an array of images and converts each image into a 1D array.
+    
+    :param images_array: The `images_array` parameter is a list of images. Each image is represented as
+    a 2D array or matrix
+    :return: a list of 1D arrays, where each array represents a flattened version of an image from the
+    input images_array.
+    """
     images_1D = []
     for img in images_array:
         images_1D.append(img.reshape(-1))
     return images_1D
 
 def get_mean_face_vector(images_array):
+    """
+    The function calculates the mean face vector by summing up all the images in the array and dividing
+    by the number of images.
+    
+    :param images_array: The `images_array` parameter is an array of images. Each image in the array
+    should be a numpy array representing the pixel values of the image
+    :return: the mean face vector, which is the average of all the face vectors in the images_array.
+    """
     mean_vector = np.zeros(images_array[0].shape, np.uint8)
     for img in images_array:    
         mean_vector += img    
@@ -46,6 +74,18 @@ def get_mean_face_vector(images_array):
     return mean_vector.astype(np.float16)
 
 def mean_adjusted_face_vector(images_array, mean_face_vector):
+    """
+    The function subtracts the mean face vector from each image in the images_array and returns the
+    result.
+    
+    :param images_array: An array of face images. Each image is represented as a vector
+    :param mean_face_vector: The mean_face_vector is a vector that represents the average face in the
+    dataset. It is used to adjust each face vector in the images_array by subtracting the
+    mean_face_vector from it. This helps to normalize the data and remove any bias caused by variations
+    in lighting or other factors
+    :return: the images_array after subtracting the mean_face_vector from it and converting the result
+    to a numpy float16 data type.
+    """
     images_array -= mean_face_vector
     return images_array.astype(np.float16)
 
@@ -72,6 +112,16 @@ def compute_covariance_matrix(images_array_1D):
     return cov_matrix_small, mean_adjusted_array
 
 def eigen_decomposition(covariance_matrix):
+    """
+    The function `eigen_decomposition` performs eigen decomposition on a given covariance matrix using
+    CuPy library for GPU acceleration.
+    
+    :param covariance_matrix: The covariance_matrix parameter is a square matrix that represents the
+    covariance between variables. It is typically a symmetric matrix where each element represents the
+    covariance between two variables. The size of the matrix determines the number of variables being
+    considered
+    :return: the eigenvectors and eigenvalues of the input covariance matrix.
+    """
     # Convert your NumPy array to a CuPy array
     covariance_matrix_gpu = cp.array(covariance_matrix)
     
@@ -107,6 +157,21 @@ def top_k_eigenvalues(eigenvalues):
     return k
 
 def get_top_k(eigenvalues, eigenvectors, k):
+    """
+    The function `get_top_k` takes in a list of eigenvalues and eigenvectors, and returns the top k
+    eigenvalues and corresponding eigenvectors.
+    
+    :param eigenvalues: The eigenvalues are the values that are obtained when solving the characteristic
+    equation of a matrix. They represent the "importance" or "magnitude" of the corresponding
+    eigenvectors
+    :param eigenvectors: A matrix where each column represents an eigenvector of a given matrix
+    :param k: The parameter "k" represents the number of top eigenvalues and eigenvectors that you want
+    to retrieve
+    :return: The function `get_top_k` returns two arrays: `sorted_eigenvalues` and
+    `sorted_eigenvectors`. The `sorted_eigenvalues` array contains the top `k` eigenvalues, sorted in
+    descending order. The `sorted_eigenvectors` array contains the corresponding eigenvectors for the
+    top `k` eigenvalues.
+    """
     idx = eigenvalues.argsort()[::-1]   
     sorted_eigenvalues = eigenvalues[idx]
     sorted_eigenvectors = eigenvectors[:, idx]
@@ -114,5 +179,18 @@ def get_top_k(eigenvalues, eigenvectors, k):
     return sorted_eigenvalues[:k], sorted_eigenvectors[:,:k]
 
 def projected_data(eigenvectors_k, mean_centered_data):
+    """
+    The function `projected_data` calculates the projection of mean-centered data onto a set of
+    eigenvectors.
+    
+    :param eigenvectors_k: The eigenvectors_k parameter represents the k eigenvectors that were obtained
+    from performing principal component analysis (PCA) on a dataset. These eigenvectors represent the
+    directions of maximum variance in the data
+    :param mean_centered_data: The mean_centered_data parameter is a matrix where each row represents a
+    data point and each column represents a feature. The data points have been mean-centered, meaning
+    that the mean of each feature has been subtracted from each data point
+    :return: the projected vector, which is the result of multiplying the mean-centered data by the
+    eigenvectors.
+    """
     projected_vector = np.dot(mean_centered_data, eigenvectors_k)
     return projected_vector
