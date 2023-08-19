@@ -1,6 +1,7 @@
-1. Foundational Knowledge : 
+## A step to be more better in VO : 
 
-Before diving into VO, it's essential to have a grasp of some foundational concepts:
+
+1. Foundational Knowledge : 
 
 - [**Done**] Linear Algebra: Understand matrices, vectors, eigenvalues, and eigenvectors.
 - Probability and Statistics: Basics of probability, Bayes' theorem, and statistical estimation techniques.
