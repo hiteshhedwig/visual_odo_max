@@ -1,18 +1,20 @@
 1. Linear Algebra:
-Project 1: Matrix Calculator
+[DONE] Project 1: Matrix Calculator
 
     Objective: Implement a calculator that can perform operations like addition, subtraction, multiplication, and inversion of matrices.
     Skills Gained: Familiarity with matrix operations, which are fundamental for transformations in VO.
 
-Project 2: Eigenface Recognition
+[DONE] Project 2: Eigenface Recognition
 
     Objective: Use eigenvalues and eigenvectors to implement a basic face recognition system.
     Skills Gained: Understanding of how eigen decomposition can be used in feature extraction and dimensionality reduction.
 
-Project 3: 3D Transformations Visualizer
+[DONE] Project 3: 3D Transformations Visualizer
 
     Objective: Create a tool that allows users to apply rigid body transformations (rotation, translation, scaling) to 3D objects and visualize the results.
     Skills Gained: Practical understanding of how transformations affect objects in 3D space.
+
+[more in](/roadmap/foundation/linear_algebra.md)
 
 2. Probability and Statistics:
 Project 4: Gaussian Distribution Simulator
