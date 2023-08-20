@@ -8,6 +8,7 @@ import select
 import sys
 from roadmap.foundation.src.transformation.translation import *
 from roadmap.foundation.src.transformation.rotation import *
+from roadmap.foundation.src.transformation.scaling import *
 import curses
 
 class PlayCube(object):
@@ -71,6 +72,7 @@ class PlayCube(object):
                 print("pressed ", user_input)
                 asciival = user_input
                 user_input=str(chr(user_input))
+                # arrow keys for rotation
                 if asciival == curses.KEY_DOWN:
                     self.vertices = apply_rotation_to_pointarray(1, axis=asciival, points_arr = self.vertices)
                 if asciival == curses.KEY_RIGHT:
@@ -89,6 +91,12 @@ class PlayCube(object):
                     self.vertices = apply_translation_to_pointarray(0,0.02,0,self.vertices)
                 if user_input == "s":
                     self.vertices = apply_translation_to_pointarray(0,-0.02,0,self.vertices)
+
+                # m,n for scaling!
+                if user_input == "m" :
+                    self.vertices = apply_scaling_to_pointarray(1.2,1.2,1.2,self.vertices)
+                if user_input == "n" :
+                    self.vertices = apply_scaling_to_pointarray(0.8,0.8,0.8,self.vertices)
 
             stdscr.refresh()
 

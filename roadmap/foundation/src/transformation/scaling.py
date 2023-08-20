@@ -9,7 +9,7 @@ This implementation focuses on scaling a 3D point in homogeneous coordinates.
 
 import numpy as np
 
-def get_scaling_matrix(Sx, Sy, Sz):
+def get_scaling_matrix(Sx, Sy, Sz, extra_dim=None):
     """
     Generate a 4x4 scaling matrix for 3D transformations.
     
@@ -21,12 +21,19 @@ def get_scaling_matrix(Sx, Sy, Sz):
     Returns:
     - ndarray: 4x4 scaling matrix.
     """
-    return np.array([
-                    [Sx, 0, 0, 0],
-                    [0, Sy, 0, 0],
-                    [0, 0, Sz, 0],
-                    [0, 0, 0, 1]
-                ])
+    if extra_dim is not None:
+        return np.array([
+                        [Sx, 0, 0, 0],
+                        [0, Sy, 0, 0],
+                        [0, 0, Sz, 0],
+                        [0, 0, 0, 1]
+                    ])
+    else :
+        return np.array([
+                        [Sx, 0, 0],
+                        [0, Sy, 0],
+                        [0, 0, Sz],
+                    ])
 
 def apply_scaling(scaling_matrix, point_xyz_h):
     """
@@ -40,6 +47,15 @@ def apply_scaling(scaling_matrix, point_xyz_h):
     - ndarray: Scaled 3D point in homogeneous coordinates.
     """
     return scaling_matrix @ point_xyz_h
+
+def apply_scaling_to_pointarray(Sx, Sy, Sz, points_arr):
+    points_arr_new = []
+    scaling_mat = get_scaling_matrix(Sx, Sy, Sz)
+    for point_xyz in points_arr:
+        translated_xyz = apply_scaling(scaling_mat, point_xyz)
+        points_arr_new.append(translated_xyz)
+    return points_arr_new
+
 
 def main():
     # A 3D point in homogeneous coordinates [X,Y,Z,1]
