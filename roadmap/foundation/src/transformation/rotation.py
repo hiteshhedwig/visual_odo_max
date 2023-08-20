@@ -23,80 +23,76 @@ def to_radians(deg):
 
 def rotation_matrix_x(theta):
     """
-    Generate a 3x3 rotation matrix for rotation about the X-axis.
+    Generate a 4x4 rotation matrix for rotation about the X-axis.
     
     Parameters:
     - theta (float): Angle of rotation in radians.
     
     Returns:
-    - ndarray: 3x3 matrix for rotation about X-axis.
+    - ndarray: 4x4 matrix for rotation about X-axis.
     """
     return np.array([
-        [1, 0, 0],
-        [0, np.cos(theta), -np.sin(theta)],
-        [0, np.sin(theta), np.cos(theta)]
+        [1, 0, 0, 0],
+        [0, np.cos(theta), -np.sin(theta), 0],
+        [0, np.sin(theta), np.cos(theta), 0],
+        [0, 0, 0, 1]
     ])
 
 def rotation_matrix_y(theta):
     """
-    Generate a 3x3 rotation matrix for rotation about the Y-axis.
+    Generate a 4x4 rotation matrix for rotation about the Y-axis.
     
     Parameters:
     - theta (float): Angle of rotation in radians.
     
     Returns:
-    - ndarray: 3x3 matrix for rotation about Y-axis.
+    - ndarray: 4x4 matrix for rotation about Y-axis.
     """
     return np.array([
-        [np.cos(theta), 0, np.sin(theta)],
-        [0, 1, 0],
-        [-np.sin(theta), 0, np.cos(theta)]
+        [np.cos(theta), 0, np.sin(theta), 0],
+        [0, 1, 0, 0],
+        [-np.sin(theta), 0, np.cos(theta), 0],
+        [0, 0, 0, 1]
     ])
 
 def rotation_matrix_z(theta):
     """
-    Generate a 3x3 rotation matrix for rotation about the Z-axis.
+    Generate a 4x4 rotation matrix for rotation about the Z-axis.
     
     Parameters:
     - theta (float): Angle of rotation in radians.
     
     Returns:
-    - ndarray: 3x3 matrix for rotation about Z-axis.
+    - ndarray: 4x4 matrix for rotation about Z-axis.
     """
     return np.array([
-        [np.cos(theta), -np.sin(theta), 0],
-        [np.sin(theta), np.cos(theta), 0],
-        [0, 0, 1]
+        [np.cos(theta), -np.sin(theta), 0, 0],
+        [np.sin(theta), np.cos(theta), 0, 0],
+        [0, 0, 1, 0],
+        [0, 0, 0, 1]
     ])
 
-def apply_rotation(x_rot, y_rot, z_rot, object_xyz):
+def apply_rotation(rot_x, rot_y, rot_z, point_xyz):
     """
     Apply rotation matrices to a 3D point.
     
     Parameters:
-    - x_rot (ndarray): 3x3 X-axis rotation matrix.
-    - y_rot (ndarray): 3x3 Y-axis rotation matrix.
-    - z_rot (ndarray): 3x3 Z-axis rotation matrix.
-    - object_xyz (ndarray): 3D point as a column vector.
+    - rot_x (ndarray): 4x4 X-axis rotation matrix.
+    - rot_y (ndarray): 4x4 Y-axis rotation matrix.
+    - rot_z (ndarray): 4x4 Z-axis rotation matrix.
+    - point_xyz (ndarray): 3D point as a column vector of shape (4,).
     
-    ZYX (Yaw, Pitch, Roll) Convention:
-
-      - First rotate about Z (yaw).
-      - Next rotate about Y (pitch).
-      - Finally, rotate about X (roll).
-      - Combined as R=RzRyRx
-        
     Returns:
     - ndarray: Rotated 3D point.
     """
-    return z_rot @ y_rot @ x_rot @ object_xyz
+    return rot_z @ rot_y @ rot_x @ point_xyz
 
 def main():
     """
     Demonstrate the rotation of a 3D point using the above functions.
     """
     angle = to_radians(45)
-    object_xyz = np.array([2, 3, 6])
+    object_xyz = np.array([2, 3, 6, 1])
 
     x_rot = rotation_matrix_x(angle)
     y_rot = rotation_matrix_y(angle)
