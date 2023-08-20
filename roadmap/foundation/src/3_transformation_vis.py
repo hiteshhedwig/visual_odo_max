@@ -74,13 +74,13 @@ class PlayCube(object):
                 user_input=str(chr(user_input))
                 # arrow keys for rotation
                 if asciival == curses.KEY_DOWN:
-                    self.vertices = apply_rotation_to_pointarray(1, axis=asciival, points_arr = self.vertices)
+                    self.vertices = rotate_points_based_on_key(1, axis_key=asciival, points = self.vertices)
                 if asciival == curses.KEY_RIGHT:
-                    self.vertices = apply_rotation_to_pointarray(1, axis=asciival, points_arr = self.vertices)
+                    self.vertices = rotate_points_based_on_key(1, axis_key=asciival, points = self.vertices)
                 if asciival == curses.KEY_UP:
-                    self.vertices = apply_rotation_to_pointarray(1, axis=asciival, points_arr = self.vertices)
+                    self.vertices = rotate_points_based_on_key(1, axis_key=asciival, points = self.vertices)
                 if asciival == curses.KEY_LEFT:
-                    self.vertices = apply_rotation_to_pointarray(1, axis=asciival, points_arr = self.vertices)
+                    self.vertices = rotate_points_based_on_key(1, axis_key=asciival, points = self.vertices)
 
                 # wasd for translation
                 if user_input == "d" :
