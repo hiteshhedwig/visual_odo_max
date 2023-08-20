@@ -110,7 +110,7 @@ def apply_rotation(rot_x, rot_y, rot_z, point_xyz):
     return rotated
 
 def apply_rotation_2d(rot2d, point_xy):
-    return np.array(rot2d@point_xy).astype(int)
+    return np.array(rot2d@point_xy)
 
 def apply_rotation_to_pointarray(theta,axis, points_arr):
     points_arr_new = []
