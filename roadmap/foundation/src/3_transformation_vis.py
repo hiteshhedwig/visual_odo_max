@@ -94,9 +94,9 @@ class PlayCube(object):
 
                 # m,n for scaling!
                 if user_input == "m" :
-                    self.vertices = apply_scaling_to_pointarray(1.2,1.2,1.2,self.vertices)
+                    self.vertices = apply_scaling_to_points(1.2,1.2,1.2,self.vertices)
                 if user_input == "n" :
-                    self.vertices = apply_scaling_to_pointarray(0.8,0.8,0.8,self.vertices)
+                    self.vertices = apply_scaling_to_points(0.8,0.8,0.8,self.vertices)
 
             stdscr.refresh()
 
