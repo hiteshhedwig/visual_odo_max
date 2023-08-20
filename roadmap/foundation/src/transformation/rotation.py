@@ -8,6 +8,8 @@
 #     Applications: Any scenario requiring a change in the orientation of an object or camera uses rotation. For instance, turning characters in video games or simulations of planetary rotations
 import numpy as np
 import math
+import curses
+
 
 def to_radians(deg):
     """
@@ -116,12 +118,14 @@ def apply_rotation_to_pointarray(theta,axis, points_arr):
     y_rot = rotation_matrix_x(0)
     z_rot = rotation_matrix_x(0)
     angle = to_radians(theta)
-    if axis == "x":
+    if axis == curses.KEY_DOWN:
         x_rot = rotation_matrix_x(angle)
-    if axis == "y":
+    if axis == curses.KEY_RIGHT:
         y_rot = rotation_matrix_y(angle)
-    if axis == "z":
-        z_rot = rotation_matrix_z(angle)
+    if axis == curses.KEY_UP:
+        x_rot = rotation_matrix_x(-angle)
+    if axis == curses.KEY_LEFT:
+        y_rot = rotation_matrix_y(-angle)
 
     for point_xyz in points_arr:
         rotated_xyz = apply_rotation(x_rot, y_rot, z_rot, point_xyz)
