@@ -9,6 +9,23 @@ This implementation focuses on scaling a 3D point in homogeneous coordinates.
 
 import numpy as np
 
+
+def generate_scaling_matrix_2d(sx, sy):
+    """
+    Generates a 2x2 scaling matrix for 2D transformations.
+    
+    Args:
+    - sx (float): Scaling factor along the X-axis.
+    - sy (float): Scaling factor along the Y-axis.
+
+    Returns:
+    - np.array: A 2x2 scaling matrix.
+    """
+    return np.array([
+        [sx, 0],
+        [0, sy]
+    ])
+
 def generate_scaling_matrix(sx, sy, sz, is_homogeneous=False):
     """
     Generates a scaling matrix based on the given scaling factors along the X, Y, and Z axes.
@@ -65,6 +82,35 @@ def apply_scaling_to_points(sx, sy, sz, points, is_homogeneous=False):
     """
     scaling_matrix = generate_scaling_matrix(sx, sy, sz, is_homogeneous)
     return [apply_scaling_to_point(scaling_matrix, point) for point in points]
+
+def apply_scaling_to_point_2d(scaling_matrix, point):
+    """
+    Applies the scaling transformation to a 2D point.
+
+    Args:
+    - scaling_matrix (np.array): The 2x2 scaling matrix.
+    - point (np.array): The 2D point.
+
+    Returns:
+    - np.array: The scaled 2D point.
+    """
+    return np.dot(scaling_matrix, point)
+
+def apply_scaling_to_points_2d(sx, sy, points):
+    """
+    Applies the scaling transformation to an array of 2D points.
+
+    Args:
+    - sx (float): Scaling factor along the X-axis.
+    - sy (float): Scaling factor along the Y-axis.
+    - points (list): List of 2D points.
+
+    Returns:
+    - list: List of scaled 2D points.
+    """
+    scaling_matrix = generate_scaling_matrix_2d(sx, sy)
+    return [apply_scaling_to_point_2d(scaling_matrix, point) for point in points]
+
 
 def main():
     # A 3D point in homogeneous coordinates [X,Y,Z,1]
