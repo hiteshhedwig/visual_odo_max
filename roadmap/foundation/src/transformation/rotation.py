@@ -142,6 +142,21 @@ def apply_2d_rotation(rotation_matrix_2d, point_2d):
     """
     return rotation_matrix_2d @ point_2d
 
+def rotate_points_based_on_mouse_movement_(deltaX, deltaY, points):
+    
+    rotation_matrix_Y = generate_rotation_matrix_y(deltaX/500)
+    rotation_matrix_X = generate_rotation_matrix_x(deltaY/500)
+
+    rotated_points = []
+    for point in points:
+        # Apply rotation matrices to each point
+        point = rotation_matrix_Y @ point
+        point = rotation_matrix_X @ point
+        rotated_points.append(point)
+
+    return rotated_points
+
+
 def rotate_points_based_on_key(angle_deg, axis_key, points):
     """
     Rotate a list of points based on a given axis key.
@@ -175,6 +190,7 @@ def rotate_points_based_on_key(angle_deg, axis_key, points):
         rotated_points.append(rotated_point)
     
     return rotated_points
+
 
     
 

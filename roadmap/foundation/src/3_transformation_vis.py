@@ -2,12 +2,11 @@ import pygame
 from pygame.locals import *
 from OpenGL.GL import *
 from OpenGL.GLU import *
-import time
 import curses
 
 # Importing transformation modules
 from roadmap.foundation.src.transformation.translation import apply_translation_to_points
-from roadmap.foundation.src.transformation.rotation import rotate_points_based_on_key
+from roadmap.foundation.src.transformation.rotation import rotate_points_based_on_key, rotate_points_based_on_mouse_movement_
 from roadmap.foundation.src.transformation.scaling import apply_scaling_to_points
 
 class PlayCube:
@@ -38,18 +37,27 @@ class PlayCube:
                 glVertex3fv(self.vertices[vertex])
         glEnd()
 
-    def play(self, stdscr):
-        """Main loop to handle user input and render the cube."""
+    def rotate_points_based_on_mouse_movement(self, dx, dy, vertices):
+        print("DX ", dx)
+        print("DY ", dy)
+        if dx > 0 and dy == 0:
+            self.vertices = rotate_points_based_on_key(1, axis_key=curses.KEY_RIGHT, points=vertices)
+            return self.vertices
+        if dx < 0 and dy == 0:
+            self.vertices = rotate_points_based_on_key(1, axis_key=curses.KEY_LEFT, points=vertices)
+            return self.vertices
+        if dx == 0:
+            return self.vertices
+        
+    def play(self):
         pygame.init()
         display = (800, 600)
         pygame.display.set_mode(display, DOUBLEBUF | OPENGL)
         gluPerspective(45, (display[0] / display[1]), 0.1, 50.0)
         glTranslatef(0.0, 0.0, -5)
 
-        # Curses settings for non-blocking input
-        curses.cbreak()
-        stdscr.keypad(True)
-        stdscr.nodelay(1)
+        # Initial mouse positions
+        init_x, init_y = None, None
 
         while True:
             for event in pygame.event.get():
@@ -57,40 +65,29 @@ class PlayCube:
                     pygame.quit()
                     return
 
-            stdscr.addstr(1, 0, "Please press a key: ")
-            user_input = stdscr.getch()
-            time.sleep(0.01)
+                # Mouse button down event
+                if event.type == pygame.MOUSEBUTTONDOWN:
+                    if event.button == 1:  # Left button
+                        init_x, init_y = event.pos
+                    elif event.button in [4, 5]:  # Scroll wheel
+                        if event.button == 4:  # Scroll up
+                            self.vertices = apply_scaling_to_points(1.1, 1.1, 1.1, self.vertices)
+                        else:  # Scroll down
+                            self.vertices = apply_scaling_to_points(0.9, 0.9, 0.9, self.vertices)
 
-            # Handle user input for transformations
-            if user_input != -1:
-                asciival = user_input
-                user_input = str(chr(user_input))
+                # Mouse motion event
+                if event.type == pygame.MOUSEMOTION and init_x is not None:
+                    cur_x, cur_y = event.pos
+                    dx, dy = cur_x - init_x, cur_y - init_y
+                    # Apply rotation based on mouse movement
+                    self.vertices = rotate_points_based_on_mouse_movement_(dx, dy, points=self.vertices)
+                    # Update initial positions
+                    init_x, init_y = cur_x, cur_y
 
-                # Handle rotation based on arrow keys
-                if asciival in [curses.KEY_DOWN, curses.KEY_RIGHT, curses.KEY_UP, curses.KEY_LEFT]:
-                    self.vertices = rotate_points_based_on_key(1, axis_key=asciival, points=self.vertices)
+                # Mouse button up event
+                if event.type == pygame.MOUSEBUTTONUP and event.button == 1:
+                    init_x, init_y = None, None
 
-                # Handle translation based on WASD keys
-                translations = {
-                    "d": (0.02, 0, 0),
-                    "a": (-0.02, 0, 0),
-                    "w": (0, 0.02, 0),
-                    "s": (0, -0.02, 0)
-                }
-                if user_input in translations:
-                    self.vertices = apply_translation_to_points(*translations[user_input], self.vertices)
-
-                # Handle scaling based on M and N keys
-                scalings = {
-                    "m": (1.2, 1.2, 1.2),
-                    "n": (0.8, 0.8, 0.8)
-                }
-                if user_input in scalings:
-                    self.vertices = apply_scaling_to_points(*scalings[user_input], self.vertices)
-
-            stdscr.refresh()
-
-            # Render the cube
             glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
             self.draw_cube()
             pygame.display.flip()
@@ -98,4 +95,4 @@ class PlayCube:
 
 if __name__ == "__main__":
     play = PlayCube()
-    curses.wrapper(play.play)
+    play.play()
