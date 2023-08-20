@@ -84,13 +84,13 @@ class PlayCube(object):
 
                 # wasd for translation
                 if user_input == "d" :
-                    self.vertices = apply_translation_to_pointarray(0.02,0,0,self.vertices)
+                    self.vertices = apply_translation_to_points(0.02,0,0,self.vertices)
                 if user_input == "a" :
-                    self.vertices = apply_translation_to_pointarray(-0.02,0,0,self.vertices)
+                    self.vertices = apply_translation_to_points(-0.02,0,0,self.vertices)
                 if user_input == "w":
-                    self.vertices = apply_translation_to_pointarray(0,0.02,0,self.vertices)
+                    self.vertices = apply_translation_to_points(0,0.02,0,self.vertices)
                 if user_input == "s":
-                    self.vertices = apply_translation_to_pointarray(0,-0.02,0,self.vertices)
+                    self.vertices = apply_translation_to_points(0,-0.02,0,self.vertices)
 
                 # m,n for scaling!
                 if user_input == "m" :

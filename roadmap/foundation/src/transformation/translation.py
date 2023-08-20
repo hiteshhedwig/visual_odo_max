@@ -11,68 +11,70 @@
 # matrix TT in homogeneous coordinates
 import numpy as np
 
-def get_translation_matrix(Tx, Ty, Tz, extra_dim=None):
+def generate_translation_matrix(tx, ty, tz, is_homogeneous=False):
     """
-    Generates a 4x4 translation matrix based on the given translations along the X, Y, and Z axes.
+    Generates a translation matrix based on the given translations along the X, Y, and Z axes.
     
     Args:
-    - Tx (float): Translation along the X-axis.
-    - Ty (float): Translation along the Y-axis.
-    - Tz (float): Translation along the Z-axis.
+    - tx (float): Translation along the X-axis.
+    - ty (float): Translation along the Y-axis.
+    - tz (float): Translation along the Z-axis.
+    - is_homogeneous (bool): If True, returns a 4x4 matrix, otherwise a 3x1 vector.
 
     Returns:
-    - np.array: A 4x4 translation matrix.
+    - np.array: A translation matrix or vector.
     """
-    if extra_dim is not None:
+    if is_homogeneous:
         return np.array([
-                        [1, 0, 0, Tx],
-                        [0, 1, 0, Ty],
-                        [0, 0, 1, Tz],
-                        [0, 0, 0, 1]
-                    ])
-    else :
-        return np.array([Tx,Ty,Tz])
+            [1, 0, 0, tx],
+            [0, 1, 0, ty],
+            [0, 0, 1, tz],
+            [0, 0, 0, 1]
+        ])
+    else:
+        return np.array([tx, ty, tz])
 
-def apply_translation(translation_matrix, object_xyz_homogeneous):
+def apply_translation_to_point(translation, point):
     """
-    Applies the translation to a 3D point (in homogeneous coordinates) using the translation matrix.
+    Applies the translation to a 3D point.
 
     Args:
-    - translation_matrix (np.array): The 4x4 translation matrix.
-    - object_xyz_homogeneous (np.array): The 3D point in homogeneous coordinates.
+    - translation (np.array): The translation matrix or vector.
+    - point (np.array): The 3D point.
 
     Returns:
     - np.array: The translated 3D point.
     """
-    return np.dot(translation_matrix, object_xyz_homogeneous)
+    if len(translation) == 4:  # Homogeneous matrix
+        return np.dot(translation, point)
+    else:  # Regular 3D translation
+        return point + translation
 
-def apply_translation_regular(translation_matrix, xyz_coords) :
-    return [
-            xyz_coords[0]+translation_matrix[0],
-            xyz_coords[1]+translation_matrix[1],
-            xyz_coords[2]+translation_matrix[2] 
-            ]
+def apply_translation_to_points(tx, ty, tz, points, is_homogeneous=False):
+    """
+    Applies the translation to an array of 3D points.
 
-def apply_translation_to_pointarray(Tx, Ty, Tz, points_arr):
-    points_arr_new = []
-    T_mat = get_translation_matrix(Tx, Ty, Tz)
-    for point_xyz in points_arr:
-        translated_xyz = apply_translation_regular(T_mat, point_xyz)
-        points_arr_new.append(translated_xyz)
-    return points_arr_new
+    Args:
+    - tx (float): Translation along the X-axis.
+    - ty (float): Translation along the Y-axis.
+    - tz (float): Translation along the Z-axis.
+    - points (list): List of 3D points.
+    - is_homogeneous (bool): If True, uses homogeneous coordinates.
+
+    Returns:
+    - list: List of translated 3D points.
+    """
+    translation = generate_translation_matrix(tx, ty, tz, is_homogeneous)
+    return [apply_translation_to_point(translation, point) for point in points]
 
 def main():
     # A 3D point in homogeneous coordinates [X,Y,Z,1]
-    object_xyz_homogeneous = np.array([2, 3, 6, 1])
-
-    # Get a translation matrix
-    translation_matrix = get_translation_matrix(3, 5, 2)
+    point_homogeneous = np.array([2, 3, 6, 1])
 
     # Apply the translation to the 3D point
-    translated_object_xyz = apply_translation(translation_matrix, object_xyz_homogeneous)
+    translated_point = apply_translation_to_point(generate_translation_matrix(3, 5, 2,is_homogeneous=True), point_homogeneous)
 
-    print(translated_object_xyz)
-
+    print(translated_point)
 
 if __name__ == '__main__':
     main()
