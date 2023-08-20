@@ -21,7 +21,13 @@ def to_radians(deg):
     """
     return deg * math.pi / 180
 
-def rotation_matrix_x(theta):
+def rotation_matrix_2d(theta):
+    return np.array([
+            [np.cos(theta), -np.sin(theta)],
+            [np.sin(theta), np.cos(theta)]
+        ])
+
+def rotation_matrix_x(theta, extra_dim=None):
     """
     Generate a 4x4 rotation matrix for rotation about the X-axis.
     
@@ -31,14 +37,21 @@ def rotation_matrix_x(theta):
     Returns:
     - ndarray: 4x4 matrix for rotation about X-axis.
     """
-    return np.array([
-        [1, 0, 0, 0],
-        [0, np.cos(theta), -np.sin(theta), 0],
-        [0, np.sin(theta), np.cos(theta), 0],
-        [0, 0, 0, 1]
-    ])
+    if extra_dim is not None:
+        return np.array([
+            [1, 0, 0, 0],
+            [0, np.cos(theta), -np.sin(theta), 0],
+            [0, np.sin(theta), np.cos(theta), 0],
+            [0, 0, 0, 1]
+        ])
+    else :
+        return np.array([
+            [1, 0, 0],
+            [0, np.cos(theta), -np.sin(theta)],
+            [0, np.sin(theta), np.cos(theta)],
+        ])
 
-def rotation_matrix_y(theta):
+def rotation_matrix_y(theta, extra_dim=None):
     """
     Generate a 4x4 rotation matrix for rotation about the Y-axis.
     
@@ -48,14 +61,21 @@ def rotation_matrix_y(theta):
     Returns:
     - ndarray: 4x4 matrix for rotation about Y-axis.
     """
-    return np.array([
-        [np.cos(theta), 0, np.sin(theta), 0],
-        [0, 1, 0, 0],
-        [-np.sin(theta), 0, np.cos(theta), 0],
-        [0, 0, 0, 1]
-    ])
+    if extra_dim is not None:
+        return np.array([
+            [np.cos(theta), 0, np.sin(theta), 0],
+            [0, 1, 0, 0],
+            [-np.sin(theta), 0, np.cos(theta), 0],
+            [0, 0, 0, 1]
+        ])
+    else :
+        return np.array([
+            [np.cos(theta), 0, np.sin(theta)],
+            [0, 1, 0],
+            [-np.sin(theta), 0, np.cos(theta)],
+        ])
 
-def rotation_matrix_z(theta):
+def rotation_matrix_z(theta, extra_dim=None):
     """
     Generate a 4x4 rotation matrix for rotation about the Z-axis.
     
@@ -65,27 +85,49 @@ def rotation_matrix_z(theta):
     Returns:
     - ndarray: 4x4 matrix for rotation about Z-axis.
     """
-    return np.array([
-        [np.cos(theta), -np.sin(theta), 0, 0],
-        [np.sin(theta), np.cos(theta), 0, 0],
-        [0, 0, 1, 0],
-        [0, 0, 0, 1]
-    ])
+    if extra_dim is not None:
+        return np.array([
+            [np.cos(theta), -np.sin(theta), 0, 0],
+            [np.sin(theta), np.cos(theta), 0, 0],
+            [0, 0, 1, 0],
+            [0, 0, 0, 1]
+        ])
+    else :
+        return np.array([
+            [np.cos(theta), -np.sin(theta), 0],
+            [np.sin(theta), np.cos(theta), 0],
+            [0, 0, 1],
+        ])
+
 
 def apply_rotation(rot_x, rot_y, rot_z, point_xyz):
-    """
-    Apply rotation matrices to a 3D point.
+    # print("rotation_mat ", rot_x, " ", rot_y, " ", rot_z)
+    # print("point_xyz ", point_xyz)
+    rotated = np.array(rot_z @ rot_y @ rot_x @ point_xyz)
+    # print("rotated ", rotated)
+    return rotated
+
+def apply_rotation_2d(rot2d, point_xy):
+    return np.array(rot2d@point_xy).astype(int)
+
+def apply_rotation_to_pointarray(theta,axis, points_arr):
+    points_arr_new = []
+    x_rot = rotation_matrix_x(0)
+    y_rot = rotation_matrix_x(0)
+    z_rot = rotation_matrix_x(0)
+    angle = to_radians(theta)
+    if axis == "x":
+        x_rot = rotation_matrix_x(angle)
+    if axis == "y":
+        y_rot = rotation_matrix_y(angle)
+    if axis == "z":
+        z_rot = rotation_matrix_z(angle)
+
+    for point_xyz in points_arr:
+        rotated_xyz = apply_rotation(x_rot, y_rot, z_rot, point_xyz)
+        points_arr_new.append(rotated_xyz)
+    return points_arr_new
     
-    Parameters:
-    - rot_x (ndarray): 4x4 X-axis rotation matrix.
-    - rot_y (ndarray): 4x4 Y-axis rotation matrix.
-    - rot_z (ndarray): 4x4 Z-axis rotation matrix.
-    - point_xyz (ndarray): 3D point as a column vector of shape (4,).
-    
-    Returns:
-    - ndarray: Rotated 3D point.
-    """
-    return rot_z @ rot_y @ rot_x @ point_xyz
 
 def main():
     """
