@@ -67,6 +67,10 @@ def apply_translation_to_points(tx, ty, tz, points, is_homogeneous=False):
     translation = generate_translation_matrix(tx, ty, tz, is_homogeneous)
     return [apply_translation_to_point(translation, point) for point in points]
 
+def translate_points_based_on_mouse_movement_(deltaX, deltaY, points):
+    return apply_translation_to_points(deltaX/1000, deltaY/1000, 0, points)
+
+
 def main():
     # A 3D point in homogeneous coordinates [X,Y,Z,1]
     point_homogeneous = np.array([2, 3, 6, 1])
