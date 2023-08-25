@@ -8,77 +8,81 @@
 #  Bayes theorem, the geometry of changing beliefs  : https://www.youtube.com/watch?v=HZGCoVF3YvM
 
 import numpy as np
-import math
+import matplotlib.pyplot as plt
+
+
+def bayes_theorem(prior, likelihood, evidence):
+    return (likelihood * prior) / evidence
 
 class VehicleMotionModel:
-    def __init__(self, initial_state):
-        # Initial state is [x, y, theta]
-        self.state = initial_state
+    def __init__(self, initial_position, velocity):
+        self.position = initial_position
+        self.velocity = velocity
 
-    def move(self, control_input):
-        # Control input is [distance, delta_theta]
-        d, delta_theta = control_input
+    def move(self, time_interval):
+        self.position += self.velocity * time_interval
+        return self.position
+    
+class NoisySensor:
+    def __init__(self, noise_std_dev):
+        self.noise_std_dev = noise_std_dev
 
-        # Update state based on motion model
-        self.state[0] += d * math.cos(self.state[2] + delta_theta)
-        self.state[1] += d * math.sin(self.state[2] + delta_theta)
-        self.state[2] += delta_theta
+    def measure(self, true_position):
+        return true_position + np.random.normal(0, self.noise_std_dev)
 
-        # Normalize theta to be between -pi and pi
-        self.state[2] = (self.state[2] + math.pi) % (2 * math.pi) - math.pi
+class BayesianFilter:
+    def __init__(self, initial_estimate, initial_uncertainty):
+        self.estimate = initial_estimate
+        self.uncertainty = initial_uncertainty
 
-        return self.state
+    def predict(self, motion, motion_uncertainty):
+        self.estimate += motion
+        self.uncertainty += motion_uncertainty
 
-
-class VehicleMeasurementModel:
-    def __init__(self, gps_variance, theta_variance):
-        """
-        Initialize the measurement model with GPS and theta variance.
+    def update(self, measurement, measurement_uncertainty):
+        # Compute Kalman Gain
+        kalman_gain = self.uncertainty / (self.uncertainty + measurement_uncertainty)
         
-        :param gps_variance: Variance of the GPS sensor for position measurements.
-        :param theta_variance: Variance of the compass/IMU for orientation measurements.
-        """
-        self.gps_variance = gps_variance
-        self.theta_variance = theta_variance
-
-    def likelihood(self, true_state, measured_state):
-        """
-        Compute the likelihood of a measured state given a true state.
-        
-        :param true_state: Estimated true state [x, y, theta].
-        :param measured_state: State reported by the sensors [x, y, theta].
-        :return: Likelihood value.
-        """
-        # Compute likelihood for position measurements
-        gps_likelihood = (1 / (2 * np.pi * self.gps_variance)) * \
-                         np.exp(-0.5 * ((measured_state[0] - true_state[0])**2 + 
-                                        (measured_state[1] - true_state[1])**2) / self.gps_variance)
-        
-        # Compute likelihood for orientation measurement
-        theta_diff = (measured_state[2] - true_state[2] + np.pi) % (2 * np.pi) - np.pi
-        theta_likelihood = (1 / np.sqrt(2 * np.pi * self.theta_variance)) * \
-                           np.exp(-0.5 * (theta_diff ** 2) / self.theta_variance)
-        
-        # Combine the likelihoods (assuming independence between position and orientation measurements)
-        return gps_likelihood * theta_likelihood
+        # Update estimate and uncertainty
+        self.estimate = self.estimate + kalman_gain * (measurement - self.estimate)
+        self.uncertainty = (1 - kalman_gain) * self.uncertainty
 
 
-if __name__ == "__main__":
-    vehicle = VehicleMotionModel([0, 0, 0])  # Starting at (0, 0) with a heading of 0 radians
-    new_state = vehicle.move([5, math.pi/4])  # Move forward by 5 units and turn by 45 degrees
-    print(new_state)
 
-    # Example usage:
-    gps_variance = 2.0  # Assume the GPS has a variance of 2.0 units^2 for position measurements
-    theta_variance = 0.1  # Assume the compass/IMU has a variance of 0.1 rad^2
-    model = VehicleMeasurementModel(gps_variance, theta_variance)
+# Initialize vehicle and sensor
+vehicle = VehicleMotionModel(0, 1)  # Start at position 0 with velocity 1
+sensor = NoisySensor(0.5)  # Sensor with noise standard deviation of 0.5
 
-    # Simulate a measurement around the true state
-    true_state = new_state
-    measured_state = [np.random.normal(true_state[0], np.sqrt(gps_variance)),
-                    np.random.normal(true_state[1], np.sqrt(gps_variance)),
-                    np.random.normal(true_state[2], np.sqrt(theta_variance))]
+# Initialize Bayesian filter
+filter = BayesianFilter(0, 1)  # Initial estimate of position 0 with uncertainty 1
 
-    # Compute the likelihood of the measured state given the true state
-    likelihood = model.likelihood(true_state, measured_state)
-    print(f"Likelihood of measured state given true state: {likelihood}")
+# Lists to store true positions, measurements, and estimates
+true_positions = []
+measurements = []
+estimates = []
+
+# Simulate for 100 time steps
+for _ in range(100):
+    # Move vehicle
+    true_position = vehicle.move(1)
+    true_positions.append(true_position)
+    
+    # Take measurement
+    measurement = sensor.measure(true_position)
+    measurements.append(measurement)
+    
+    # Prediction step
+    filter.predict(1, 0.1)  # Predict motion of 1 with uncertainty 0.1
+    
+    # Update step
+    filter.update(measurement, 0.5)  # Update with measurement and its uncertainty
+    estimates.append(filter.estimate)
+
+# Plot results
+plt.plot(true_positions, label="True Position")
+plt.plot(measurements, label="Measurements", linestyle="dotted")
+plt.plot(estimates, label="Estimates", linestyle="dashed")
+plt.legend()
+plt.show()
+
+    
