@@ -25,6 +25,25 @@ def orb_keypoints(images):
 
     return kp_des_list
 
+def generate_bf_matching_keypoints(images,kp_des_list):
+
+    for idx, image in enumerate(images):
+        if idx == len(images)-1:
+            break
+        # Use BFMatcher (Brute Force Matcher) to find matches
+        bf = cv2.BFMatcher(cv2.NORM_HAMMING, crossCheck=True)
+        matches = bf.match(kp_des_list[idx][1], kp_des_list[idx+1][1])
+
+        # Sort matches based on their distances
+        matches = sorted(matches, key=lambda x: x.distance)
+
+        # Draw the matches
+        img_matches = cv2.drawMatches(images[idx], kp_des_list[idx][0], images[idx+1], kp_des_list[idx+1][0], matches[:50], None, flags=cv2.DrawMatchesFlags_NOT_DRAW_SINGLE_POINTS)
+
+        # Display the matched images
+        plt.imshow(img_matches)
+        plt.show()
+
 def main():
     directory = "roadmap/foundation/assets/jimmy"
     images = files_list(directory)
@@ -32,19 +51,7 @@ def main():
 
     kp_des_list = orb_keypoints(images)
 
-    # Use BFMatcher (Brute Force Matcher) to find matches
-    bf = cv2.BFMatcher(cv2.NORM_HAMMING, crossCheck=True)
-    matches = bf.match(kp_des_list[0][1], kp_des_list[1][1])
-
-    # Sort matches based on their distances
-    matches = sorted(matches, key=lambda x: x.distance)
-
-    # Draw the matches
-    img_matches = cv2.drawMatches(images[0], kp_des_list[0][0], images[1], kp_des_list[1][0], matches[:50], None, flags=cv2.DrawMatchesFlags_NOT_DRAW_SINGLE_POINTS)
-
-    # Display the matched images
-    plt.imshow(img_matches)
-    plt.show()
+    generate_bf_matching_keypoints(images, kp_des_list)
 
 
 if __name__ == '__main__':
