@@ -57,15 +57,17 @@ def main():
     # generate_bf_matching_keypoints(images, kp_des_list)
     bf = cv2.BFMatcher(cv2.NORM_HAMMING)
 
+    kp1 = kp_des_list[0][0]
+    kp2 = kp_des_list[1][0]
+
+    des1 = kp_des_list[0][1]
+    des2 = kp_des_list[1][1]
+
     # use knnMatch(not match()) to apply good ratio filter later
     # The knnMatch method is used to find the k closest descriptors in the second image for each descriptor in the first image.
     # Specifically, for each descriptor in the first image (des1), knnMatch finds the k best matches in the second image (des2).
     # When performing the ratio test, k is typically set to 2. This means for each descriptor in des1, we retrieve the two best matches from des2.
-
-    matches = bf.knnMatch(kp_des_list[0][1], kp_des_list[1][1], k=2)
-
-    kp1 = kp_des_list[0][0]
-    kp2 = kp_des_list[1][0]
+    matches = bf.knnMatch(des1, des2, k=2)
 
     # For each pair of matches (m, n) obtained:
     # m is the best match and n is the second-best match.
