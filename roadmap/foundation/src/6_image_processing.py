@@ -94,6 +94,9 @@ class ImageWindow(QMainWindow):
 
     def on_median_blur(self,checked):
         if checked:
+            self.on_canny_edge(False)
+            self.btn2.setChecked(False)
+
             self.btn1.setText(f"{IMG_PROCESS_OPS.MEDIAN_BLUR.name} - ON")
             self.current_ops = IMG_PROCESS_OPS.MEDIAN_BLUR.name
         else:
@@ -102,6 +105,9 @@ class ImageWindow(QMainWindow):
     def on_canny_edge(self,checked):
     
         if checked:
+            self.on_median_blur(False)
+            self.btn1.setChecked(False)
+
             self.btn2.setText(f"{IMG_PROCESS_OPS.CANNY_EDGE.name} - ON")
             self.current_ops = IMG_PROCESS_OPS.CANNY_EDGE.name
         else:
@@ -131,7 +137,6 @@ class ImageWindow(QMainWindow):
 
     def slider_changed(self, value):
         # This method gets called when slider value changes
-        print(f"Slider value: {value}")
         if self.current_ops == IMG_PROCESS_OPS.MEDIAN_BLUR.name:
             kernal_size= int(((100+value)/200)*21)
             pix_image = self.image_process.apply_median_filter(nearest_odd(kernal_size))
