@@ -56,6 +56,8 @@ def main():
 
     # generate_bf_matching_keypoints(images, kp_des_list)
     bf = cv2.BFMatcher(cv2.NORM_HAMMING)
+
+    # use knnMatch(not match()) to apply good ratio filter later
     matches = bf.knnMatch(kp_des_list[0][1], kp_des_list[1][1], k=2)
 
     kp1 = kp_des_list[0][0]
