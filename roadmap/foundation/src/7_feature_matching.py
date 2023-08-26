@@ -3,6 +3,7 @@
 # - **Skills Gained**: Understanding of feature detection, description, matching, and robust estimation techniques.
 import glob as glob
 import cv2 
+import numpy as np
 from matplotlib import pyplot as plt
 
 def files_list(directory):
@@ -50,8 +51,36 @@ def main():
     print(f"{len(images)} Numbers of images are loaded")
 
     kp_des_list = orb_keypoints(images)
+    img1 = images[0]
+    img2 = images[1]
 
-    generate_bf_matching_keypoints(images, kp_des_list)
+    # generate_bf_matching_keypoints(images, kp_des_list)
+    bf = cv2.BFMatcher(cv2.NORM_HAMMING)
+    matches = bf.knnMatch(kp_des_list[0][1], kp_des_list[1][1], k=2)
+
+    kp1 = kp_des_list[0][0]
+    kp2 = kp_des_list[1][0]
+
+    
+    good_matches = []
+    for m, n in matches:
+        if m.distance < 0.75 * n.distance:
+            good_matches.append(m)
+
+    # Extract the coordinates of matched keypoints
+    src_pts = np.float32([kp1[m.queryIdx].pt for m in good_matches])
+    dst_pts = np.float32([kp2[m.trainIdx].pt for m in good_matches])
+
+    # Use RANSAC to identify inliers
+    _, inliers = cv2.findFundamentalMat(src_pts, dst_pts, cv2.FM_RANSAC)
+
+    # Filter matches using the inliers
+    ransac_matches = [good_matches[i] for i, val in enumerate(inliers) if val == 1]
+
+
+    img_matches = cv2.drawMatches(img1, kp1, img2, kp2, ransac_matches, None)
+    plt.imshow(img_matches)
+    plt.show()
 
 
 if __name__ == '__main__':
