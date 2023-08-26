@@ -5,6 +5,7 @@ import glob as glob
 import cv2 
 import numpy as np
 from matplotlib import pyplot as plt
+import random
 
 def files_list(directory):
     files = []
@@ -47,21 +48,26 @@ def generate_bf_matching_keypoints(images,kp_des_list):
 
 def generate_ransac_matching(images,kp_des_list):
 
-    for idx, _ in enumerate(images):
-        if idx == len(images)-1:
-            break
 
-        img1 = images[idx]
-        img2 = images[idx+1]
+    for i in range(0, 20):
+        # Generate two random numbers within the range
+        num1 = random.randint(0, len(images)-1)
+        num2 = random.randint(0, len(images)-1)
+        
+        if num1 == num2:
+            continue
+
+        img1 = images[num1]
+        img2 = images[num2]
 
         # generate_bf_matching_keypoints(images, kp_des_list)
         bf = cv2.BFMatcher(cv2.NORM_HAMMING)
 
-        kp1 = kp_des_list[idx][0]
-        kp2 = kp_des_list[idx+1][0]
+        kp1 = kp_des_list[num1][0]
+        kp2 = kp_des_list[num2][0]
 
-        des1 = kp_des_list[idx][1]
-        des2 = kp_des_list[idx+1][1]
+        des1 = kp_des_list[num1][1]
+        des2 = kp_des_list[num2][1]
 
         # use knnMatch(not match()) to apply good ratio filter later
         # The knnMatch method is used to find the k closest descriptors in the second image for each descriptor in the first image.
