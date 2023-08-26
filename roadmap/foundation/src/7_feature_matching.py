@@ -45,56 +45,67 @@ def generate_bf_matching_keypoints(images,kp_des_list):
         plt.imshow(img_matches)
         plt.show()
 
+def generate_ransac_matching(images,kp_des_list):
+
+    for idx, _ in enumerate(images):
+        if idx == len(images)-1:
+            break
+
+        img1 = images[idx]
+        img2 = images[idx+1]
+
+        # generate_bf_matching_keypoints(images, kp_des_list)
+        bf = cv2.BFMatcher(cv2.NORM_HAMMING)
+
+        kp1 = kp_des_list[idx][0]
+        kp2 = kp_des_list[idx+1][0]
+
+        des1 = kp_des_list[idx][1]
+        des2 = kp_des_list[idx+1][1]
+
+        # use knnMatch(not match()) to apply good ratio filter later
+        # The knnMatch method is used to find the k closest descriptors in the second image for each descriptor in the first image.
+        # Specifically, for each descriptor in the first image (des1), knnMatch finds the k best matches in the second image (des2).
+        # When performing the ratio test, k is typically set to 2. This means for each descriptor in des1, we retrieve the two best matches from des2.
+        matches = bf.knnMatch(des1, des2, k=2)
+
+        # For each pair of matches (m, n) obtained:
+        # m is the best match and n is the second-best match.
+        good_matches = []
+        for m, n in matches:
+            # The ratio test checks the quality of the matches.
+            # If the distance of the best match (m.distance) is significantly smaller than that of the second-best match (n.distance),
+            # then the match is considered to be "good".
+            # In this case, if m's distance is less than 75% of n's distance, it's added to the good_matches list.
+            if m.distance < 0.75 * n.distance:
+                good_matches.append(m)
+
+        # Extract the coordinates of matched keypoints
+        src_pts = np.float32([kp1[m.queryIdx].pt for m in good_matches])
+        dst_pts = np.float32([kp2[m.trainIdx].pt for m in good_matches])
+
+        # Use RANSAC to identify inliers
+        # The fundamental matrix encapsulates the epipolar geometry between two views and is a fundamental concept in stereo vision and structure from motion.
+        _, inliers = cv2.findFundamentalMat(src_pts, dst_pts, cv2.FM_RANSAC)
+
+        if inliers is None:
+            continue
+        # Filter matches using the inliers
+        ransac_matches = [good_matches[i] for i, val in enumerate(inliers) if val == 1]
+
+
+        img_matches = cv2.drawMatches(img1, kp1, img2, kp2, ransac_matches, None)
+        plt.imshow(img_matches)
+        plt.show()
+
+
 def main():
     directory = "roadmap/foundation/assets/jimmy"
     images = files_list(directory)
     print(f"{len(images)} Numbers of images are loaded")
 
-    kp_des_list = orb_keypoints(images)
-    img1 = images[0]
-    img2 = images[1]
-
-    # generate_bf_matching_keypoints(images, kp_des_list)
-    bf = cv2.BFMatcher(cv2.NORM_HAMMING)
-
-    kp1 = kp_des_list[0][0]
-    kp2 = kp_des_list[1][0]
-
-    des1 = kp_des_list[0][1]
-    des2 = kp_des_list[1][1]
-
-    # use knnMatch(not match()) to apply good ratio filter later
-    # The knnMatch method is used to find the k closest descriptors in the second image for each descriptor in the first image.
-    # Specifically, for each descriptor in the first image (des1), knnMatch finds the k best matches in the second image (des2).
-    # When performing the ratio test, k is typically set to 2. This means for each descriptor in des1, we retrieve the two best matches from des2.
-    matches = bf.knnMatch(des1, des2, k=2)
-
-    # For each pair of matches (m, n) obtained:
-    # m is the best match and n is the second-best match.
-    good_matches = []
-    for m, n in matches:
-        # The ratio test checks the quality of the matches.
-        # If the distance of the best match (m.distance) is significantly smaller than that of the second-best match (n.distance),
-        # then the match is considered to be "good".
-        # In this case, if m's distance is less than 75% of n's distance, it's added to the good_matches list.
-        if m.distance < 0.75 * n.distance:
-            good_matches.append(m)
-
-    # Extract the coordinates of matched keypoints
-    src_pts = np.float32([kp1[m.queryIdx].pt for m in good_matches])
-    dst_pts = np.float32([kp2[m.trainIdx].pt for m in good_matches])
-
-    # Use RANSAC to identify inliers
-    # The fundamental matrix encapsulates the epipolar geometry between two views and is a fundamental concept in stereo vision and structure from motion.
-    _, inliers = cv2.findFundamentalMat(src_pts, dst_pts, cv2.FM_RANSAC)
-
-    # Filter matches using the inliers
-    ransac_matches = [good_matches[i] for i, val in enumerate(inliers) if val == 1]
-
-
-    img_matches = cv2.drawMatches(img1, kp1, img2, kp2, ransac_matches, None)
-    plt.imshow(img_matches)
-    plt.show()
+    kp_des_list = orb_keypoints(images)    
+    generate_ransac_matching(images, kp_des_list)
 
 
 if __name__ == '__main__':
