@@ -22,16 +22,15 @@ def nearest_odd(n):
 
 class IMG_PROCESS_OPS(Enum):
     MEDIAN_BLUR = 1
+    CANNY_EDGE  = 2
 
 class ImageProcessingToolbox(object):
     def __init__(self, image_path):
         self.image_path = image_path
         self.image = cv2.imread(image_path)
 
-    def detect_edges_sobel(self):
-        sobelx = cv2.Sobel(self.image, cv2.CV_64F, 1, 0, ksize=5)
-        sobely = cv2.Sobel(self.image, cv2.CV_64F, 0, 1, ksize=5)
-        return np.hypot(sobelx, sobely)
+    def detect_edges_sobel(self, upper_threshold):
+        return cv2.Canny(self.image, 0, upper_threshold)
     
     def apply_median_filter(self, kernel_size):
         return cv2.medianBlur(self.image, kernel_size)
@@ -81,6 +80,11 @@ class ImageWindow(QMainWindow):
         self.btn1.clicked.connect(self.on_median_blur)
         button_layout.addWidget(self.btn1)
 
+        self.btn2 = QPushButton('edge detection!', self)
+        self.btn2.setCheckable(True)
+        self.btn2.clicked.connect(self.on_canny_edge)
+        button_layout.addWidget(self.btn2)
+
         layout.addLayout(button_layout)
 
         central_widget = QWidget(self)
@@ -95,6 +99,13 @@ class ImageWindow(QMainWindow):
         else:
             self.btn1.setText("Median Blur!")
 
+    def on_canny_edge(self,checked):
+    
+        if checked:
+            self.btn2.setText(f"{IMG_PROCESS_OPS.CANNY_EDGE.name} - ON")
+            self.current_ops = IMG_PROCESS_OPS.CANNY_EDGE.name
+        else:
+            self.btn2.setText("edge detection!")
 
     def on_btn_click(self, value):
         print(" button ", value)
@@ -125,6 +136,13 @@ class ImageWindow(QMainWindow):
             kernal_size= int(((100+value)/200)*21)
             pix_image = self.image_process.apply_median_filter(nearest_odd(kernal_size))
             self.update_image(pix_image)
+
+        if self.current_ops == IMG_PROCESS_OPS.CANNY_EDGE.name:
+            upper_bound = value*2.44
+            pix_image = self.image_process.detect_edges_sobel(upper_bound)
+            self.update_image(pix_image)
+
+        
         
 
 
