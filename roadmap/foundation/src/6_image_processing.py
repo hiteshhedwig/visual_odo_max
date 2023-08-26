@@ -77,6 +77,7 @@ class ImageWindow(QMainWindow):
         button_layout.addWidget(self.btn)
 
         self.btn1 = QPushButton('Median Blur!', self)
+        self.btn1.setCheckable(True)
         self.btn1.clicked.connect(self.on_median_blur)
         button_layout.addWidget(self.btn1)
 
@@ -87,8 +88,12 @@ class ImageWindow(QMainWindow):
 
         self.setCentralWidget(central_widget)
 
-    def on_median_blur(self,value):
-        self.current_ops = IMG_PROCESS_OPS.MEDIAN_BLUR.name
+    def on_median_blur(self,checked):
+        if checked:
+            self.btn1.setText(f"{IMG_PROCESS_OPS.MEDIAN_BLUR.name} - ON")
+            self.current_ops = IMG_PROCESS_OPS.MEDIAN_BLUR.name
+        else:
+            self.btn1.setText("Median Blur!")
 
 
     def on_btn_click(self, value):
@@ -116,7 +121,7 @@ class ImageWindow(QMainWindow):
     def slider_changed(self, value):
         # This method gets called when slider value changes
         print(f"Slider value: {value}")
-        if self.current_ops == IMG_PROCESS_OPS.MEDIAN_BLUR.value:
+        if self.current_ops == IMG_PROCESS_OPS.MEDIAN_BLUR.name:
             kernal_size= int(((100+value)/200)*21)
             pix_image = self.image_process.apply_median_filter(nearest_odd(kernal_size))
             self.update_image(pix_image)
