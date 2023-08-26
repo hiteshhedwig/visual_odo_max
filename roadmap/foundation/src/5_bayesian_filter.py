@@ -6,6 +6,7 @@
 # and be capable of implementing one
 
 #  Bayes theorem, the geometry of changing beliefs  : https://www.youtube.com/watch?v=HZGCoVF3YvM
+# https://github.com/rlabbe/Kalman-and-Bayesian-Filters-in-Python/tree/master
 
 import numpy as np
 import matplotlib.pyplot as plt
