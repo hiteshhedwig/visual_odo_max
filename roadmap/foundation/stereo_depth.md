@@ -2,6 +2,13 @@
 
 Stereo vision is the process of extracting 3D information from multiple 2D views of a scene. Stereo cameras, which are two cameras placed side by side at a known distance apart (known as the baseline), capture two images of the same scene from slightly different viewpoints. By finding the difference in the position of the same point in the two images (known as disparity), we can estimate the depth of that point in the scene.
 
+## DATA SOURCE :
+
+Middlebury Stereo Dataset
+
+**Description**: The Middlebury Stereo dataset is one of the most well-known datasets in the stereo vision community. It provides several pairs of rectified stereo images along with ground truth disparity maps.
+**Content**: Contains images of indoor scenes with objects at various depths. The dataset also provides non-occluded regions, which can be useful for evaluating the performance of disparity algorithms.
+
 ## Objective
 
 The main goal of this project is to capture images from a stereo camera setup and use algorithms to compute the disparity map, which can then be used to estimate depth.
