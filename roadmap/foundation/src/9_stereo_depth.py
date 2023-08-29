@@ -88,12 +88,13 @@ def main():
 
     cf = CalibrationFile(file_data)
     cf.parse()
-    bm(cf)
+    # bm(cf)
+    sgdm(cf)
 
 # Getting Started with Block Matching 
 def bm(cf):
     left_img = cv2.imread('roadmap/foundation/assets/stereo_data/artroom1/im0.png', 0)
-    right_img = cv2.imread('roadmap/foundation/assets/stereo_data/artroom1/im0.png', 0)
+    right_img = cv2.imread('roadmap/foundation/assets/stereo_data/artroom1/im1.png', 0)
 
     rounded_ndisp = (int(cf.ndisp) + 15) // 16 * 16  # Round to the nearest multiple of 16
     stereo = cv2.StereoBM_create(numDisparities=rounded_ndisp, blockSize=15)
@@ -104,7 +105,32 @@ def bm(cf):
     plt.show()
 
 # Semi-Global Block Matching (SGBM)
-# def sgdm()
+def sgdm(cf) :
+    left_img = cv2.imread('roadmap/foundation/assets/stereo_data/artroom1/im0.png', 0)
+    right_img = cv2.imread('roadmap/foundation/assets/stereo_data/artroom1/im1.png', 0)
+
+    window_size = 5
+    min_disp = 16
+    rounded_ndisp = (int(cf.ndisp) + 15) // 16 * 16  # Round to the nearest multiple of 16
+    num_disp = rounded_ndisp
+    stereo = cv2.StereoSGBM_create(
+        minDisparity=min_disp,
+        numDisparities=num_disp,
+        blockSize=16,
+        P1=8 * 3 * window_size ** 2,
+        P2=32 * 3 * window_size ** 2,
+        disp12MaxDiff=1,
+        uniquenessRatio=15,
+        speckleWindowSize=0,
+        speckleRange=2,
+        preFilterCap=63,
+        mode=cv2.STEREO_SGBM_MODE_SGBM_3WAY
+    )
+
+    disparity = stereo.compute(left_img, right_img)
+    plt.imshow(disparity, 'gray')
+    plt.show()
+
 
 if __name__ == '__main__':
     main()
