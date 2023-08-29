@@ -93,7 +93,9 @@ def main():
         cf = CalibrationFile(file_data)
         cf.parse()
         # bm(cf)
-        sgdm(cf, basepath+"/im0.png", basepath+"/im1.png")
+        img0 = cv2.imread(basepath+"/im0.png")
+        img1  = cv2.imread(basepath+"/im1.png")
+        sgdm(cf, img0, img1)
 
 # Getting Started with Block Matching 
 def bm(cf):
@@ -109,9 +111,9 @@ def bm(cf):
     plt.show()
 
 # Semi-Global Block Matching (SGBM)
-def sgdm(cf, img1, img2) :
-    left_img = cv2.imread(img1, 0)
-    right_img = cv2.imread(img2, 0)
+def sgdm(cf, img0, img1) :
+    left_img = cv2.cvtColor(img0, cv2.COLOR_BGR2GRAY)
+    right_img = cv2.cvtColor(img1, cv2.COLOR_BGR2GRAY)
 
     window_size = 5
     min_disp = 16
@@ -133,7 +135,7 @@ def sgdm(cf, img1, img2) :
 
     disparity = stereo.compute(left_img, right_img)
 
-    right_img = cv2.resize(cv2.imread(img2), (640,480))
+    right_img = cv2.resize(img1, (640,480))
     disparity = cv2.resize(disparity, (640,480))
     # Normalize the disparity map
     min_val, max_val = disparity.min(), disparity.max()
