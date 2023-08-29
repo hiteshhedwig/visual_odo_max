@@ -8,6 +8,43 @@ import re
 import matplotlib.pyplot as plt
 import glob
 
+
+def load_pfm(file_path):
+    with open(file_path, 'rb') as file:
+        # Read header
+        color = None
+        width = None
+        height = None
+        scale = None
+        endian = None
+
+        header = file.readline().rstrip()
+        if header == b'PF':
+            color = True
+        elif header == b'Pf':
+            color = False
+        else:
+            raise Exception('Not a PFM file.')
+
+        dim_match = re.match(r'^(\d+)\s(\d+)\s$', file.readline().decode('utf-8'))
+        if dim_match:
+            width, height = map(int, dim_match.groups())
+        else:
+            raise Exception('Malformed PFM header.')
+
+        scale = float(file.readline().rstrip())
+        if scale < 0:  # little-endian
+            endian = '<'
+            scale = -scale
+        else:
+            endian = '>'  # big-endian
+
+        data = np.fromfile(file, endian + 'f')
+        shape = (height, width, 3) if color else (height, width)
+
+        return np.reshape(data, shape), scale
+
+
 def read_calib_file(filename):
     """
     The function `read_calib_file` reads the contents of a file and returns them as a list of lines.
@@ -95,7 +132,12 @@ def main():
         # bm(cf)
         img0 = cv2.imread(basepath+"/im0.png")
         img1  = cv2.imread(basepath+"/im1.png")
-        sgdm(cf, img0, img1)
+        groundtruth,_ = load_pfm(basepath+"/disp0.pfm")
+        groundtruth[np.isinf(groundtruth)] = 0
+        groundtruth = normalize_image(groundtruth)
+        groundtruth = cv2.flip(groundtruth, 0)
+        sgdm(cf, img0, img1, groundtruth)
+        
 
 # Getting Started with Block Matching 
 def bm(cf):
@@ -111,7 +153,7 @@ def bm(cf):
     plt.show()
 
 # Semi-Global Block Matching (SGBM)
-def sgdm(cf, img0, img1) :
+def sgdm(cf, img0, img1, groundtruth) :
     left_img = cv2.cvtColor(img0, cv2.COLOR_BGR2GRAY)
     right_img = cv2.cvtColor(img1, cv2.COLOR_BGR2GRAY)
 
@@ -136,18 +178,24 @@ def sgdm(cf, img0, img1) :
     disparity = stereo.compute(left_img, right_img)
 
     right_img = cv2.resize(img1, (640,480))
-    disparity = cv2.resize(disparity, (640,480))
     # Normalize the disparity map
+    disparity_normalized = normalize_image(disparity)
+    print(groundtruth.shape)
+    ovrr = combine2image(right_img, disparity_normalized, groundtruth)
+    cv2.imshow('Normalized Disparity Map', ovrr)
+    cv2.waitKey(0)
+
+def normalize_image(disparity) :
+    # Normalize the disparity data for visualization
+    disparity = cv2.resize(disparity, (640,480))
     min_val, max_val = disparity.min(), disparity.max()
     disparity_normalized = ((disparity - min_val) / (max_val - min_val) * 255).astype('uint8')
+    return disparity_normalized
 
-    ovrr = combine2image(right_img, disparity_normalized)
-    cv2.imshow('Normalized Disparity Map', ovrr)
-    cv2.waitKey(100)
-
-def combine2image(right_img, disparity) :
-    disparity = cv2.cvtColor(disparity, cv2.COLOR_GRAY2RGB)
-    return cv2.hconcat([disparity, right_img])
+def combine2image(right_img, disparity, groundtruth) :
+    disparity = cv2.cvtColor(disparity, cv2.COLOR_GRAY2BGR)
+    groundtruth = cv2.cvtColor(groundtruth, cv2.COLOR_GRAY2BGR)
+    return cv2.hconcat([disparity, groundtruth, right_img])
 
 
 if __name__ == '__main__':
