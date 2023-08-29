@@ -5,6 +5,7 @@
 import numpy as np
 import cv2
 import re
+import matplotlib.pyplot as plt
 
 def read_calib_file(filename):
     """
@@ -87,7 +88,23 @@ def main():
 
     cf = CalibrationFile(file_data)
     cf.parse()
+    bm(cf)
 
+# Getting Started with Block Matching 
+def bm(cf):
+    left_img = cv2.imread('roadmap/foundation/assets/stereo_data/artroom1/im0.png', 0)
+    right_img = cv2.imread('roadmap/foundation/assets/stereo_data/artroom1/im0.png', 0)
+
+    rounded_ndisp = (int(cf.ndisp) + 15) // 16 * 16  # Round to the nearest multiple of 16
+    stereo = cv2.StereoBM_create(numDisparities=rounded_ndisp, blockSize=15)
+
+    disparity = stereo.compute(left_img, right_img)
+
+    plt.imshow(disparity, 'gray')
+    plt.show()
+
+# Semi-Global Block Matching (SGBM)
+# def sgdm()
 
 if __name__ == '__main__':
     main()
