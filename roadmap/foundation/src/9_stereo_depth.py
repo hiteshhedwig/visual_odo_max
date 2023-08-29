@@ -84,12 +84,13 @@ class CalibrationFile():
             self.parse_line(line, idx)
 
 def main():
-    file_data = read_calib_file("roadmap/foundation/assets/stereo_data/artroom1/calib.txt")
+    basepath = "roadmap/foundation/assets/stereo_data/artroom2"
+    file_data = read_calib_file(f"{basepath}/calib.txt")
 
     cf = CalibrationFile(file_data)
     cf.parse()
     # bm(cf)
-    sgdm(cf)
+    sgdm(cf, basepath+"/im0.png", basepath+"/im1.png")
 
 # Getting Started with Block Matching 
 def bm(cf):
@@ -105,9 +106,9 @@ def bm(cf):
     plt.show()
 
 # Semi-Global Block Matching (SGBM)
-def sgdm(cf) :
-    left_img = cv2.imread('roadmap/foundation/assets/stereo_data/artroom1/im0.png', 0)
-    right_img = cv2.imread('roadmap/foundation/assets/stereo_data/artroom1/im1.png', 0)
+def sgdm(cf, img1, img2) :
+    left_img = cv2.imread(img1, 0)
+    right_img = cv2.imread(img2, 0)
 
     window_size = 5
     min_disp = 16
