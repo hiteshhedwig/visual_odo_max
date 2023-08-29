@@ -6,6 +6,7 @@ import numpy as np
 import cv2
 import re
 import matplotlib.pyplot as plt
+import glob
 
 def read_calib_file(filename):
     """
@@ -84,13 +85,15 @@ class CalibrationFile():
             self.parse_line(line, idx)
 
 def main():
-    basepath = "roadmap/foundation/assets/stereo_data/artroom2"
-    file_data = read_calib_file(f"{basepath}/calib.txt")
 
-    cf = CalibrationFile(file_data)
-    cf.parse()
-    # bm(cf)
-    sgdm(cf, basepath+"/im0.png", basepath+"/im1.png")
+    PATH = "roadmap/foundation/assets/stereo_data"
+    for basepath in glob.glob(PATH+"/*"):
+        print("Loading Stereo data from " + basepath)
+        file_data = read_calib_file(f"{basepath}/calib.txt")
+        cf = CalibrationFile(file_data)
+        cf.parse()
+        # bm(cf)
+        sgdm(cf, basepath+"/im0.png", basepath+"/im1.png")
 
 # Getting Started with Block Matching 
 def bm(cf):
@@ -129,8 +132,20 @@ def sgdm(cf, img1, img2) :
     )
 
     disparity = stereo.compute(left_img, right_img)
-    plt.imshow(disparity, 'gray')
-    plt.show()
+
+    right_img = cv2.resize(cv2.imread(img2), (640,480))
+    disparity = cv2.resize(disparity, (640,480))
+    # Normalize the disparity map
+    min_val, max_val = disparity.min(), disparity.max()
+    disparity_normalized = ((disparity - min_val) / (max_val - min_val) * 255).astype('uint8')
+
+    ovrr = combine2image(right_img, disparity_normalized)
+    cv2.imshow('Normalized Disparity Map', ovrr)
+    cv2.waitKey(100)
+
+def combine2image(right_img, disparity) :
+    disparity = cv2.cvtColor(disparity, cv2.COLOR_GRAY2RGB)
+    return cv2.hconcat([disparity, right_img])
 
 
 if __name__ == '__main__':
