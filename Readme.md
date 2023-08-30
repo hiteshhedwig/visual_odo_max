@@ -2,7 +2,7 @@
 
 ### Disclaimer :
 
-I am starting this repo because to go through all the basics once more and fill the loop holes in my knowledge. I have several years of experience in Computer Vision and Deep Learning. But i have not documented notes to review. This is the repo to exactly address that. In the process to help people who are interested in building up the basics.
+I am starting this repo to revisit all the basics and fill in the gaps in my knowledge. I have several years of experience in Computer Vision and Deep Learning, but I haven't documented any notes for review. This repo is designed to address that exact issue. In the process, I aim to help people who are interested in building a strong foundation in the basics.
 
 1. Foundational Knowledge : 
 
