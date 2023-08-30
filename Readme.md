@@ -4,8 +4,8 @@
 1. Foundational Knowledge : 
 
 - [**Done**] Linear Algebra: Understand matrices, vectors, eigenvalues, and eigenvectors.
-- Probability and Statistics: Basics of probability, Bayes' theorem, and statistical estimation techniques.
-- Computer Vision Basics: Familiarize yourself with image processing, feature extraction, and camera models.
+- [**Done**] Probability and Statistics: Basics of probability, Bayes' theorem, and statistical estimation techniques.
+- [**Ongoing**] omputer Vision Basics: Familiarize yourself with image processing, feature extraction, and camera models.
 
 2. Understand Camera Models and Calibration:
 
