@@ -1,5 +1,8 @@
 ## A step to be more better in VO : 
 
+### Disclaimer :
+
+I am starting this repo because to go through all the basics once more and fill the loop holes in my knowledge. I have several years of experience in Computer Vision and Deep Learning. But i have not documented notes to review. This is the repo to exactly address that. In the process to help people who are interested in building up the basics.
 
 1. Foundational Knowledge : 
 
