@@ -122,19 +122,34 @@ class CalibrationFile():
             self.parse_line(line, idx)
 
 def load_images(basepath):
+    # Read the images
     img0 = cv2.imread(f"{basepath}/im0.png")
     img1 = cv2.imread(f"{basepath}/im1.png")
     
+    # Convert to grayscale
+    img0_gray = cv2.cvtColor(img0, cv2.COLOR_BGR2GRAY)
+    img1_gray = cv2.cvtColor(img1, cv2.COLOR_BGR2GRAY)
+    
+    # Apply histogram equalization
+    img0_eq = cv2.equalizeHist(img0_gray)
+    img1_eq = cv2.equalizeHist(img1_gray)
+    
+    # Apply Gaussian blur for noise reduction
+    img0_blur = cv2.GaussianBlur(img0_eq, (5, 5), 0)
+    img1_blur = cv2.GaussianBlur(img1_eq, (5, 5), 0)
+    
+    # Load and preprocess ground truth
     groundtruth, _ = load_pfm(f"{basepath}/disp0.pfm")
     groundtruth[np.isinf(groundtruth)] = 0
     groundtruth = normalize_image(groundtruth)
     groundtruth = cv2.flip(groundtruth, 0)
     
-    return img0, img1, groundtruth
+    return img0_blur, img1_blur, groundtruth
+
 
 def sgdm(cf, img0, img1, groundtruth):
-    left_img = cv2.cvtColor(img0, cv2.COLOR_BGR2GRAY)
-    right_img = cv2.cvtColor(img1, cv2.COLOR_BGR2GRAY)
+    left_img = img0 #cv2.cvtColor(img0, cv2.COLOR_BGR2GRAY)
+    right_img = img1 #cv2.cvtColor(img1, cv2.COLOR_BGR2GRAY)
     
     window_size = 5
     min_disp = 16
@@ -143,7 +158,7 @@ def sgdm(cf, img0, img1, groundtruth):
     stereo = cv2.StereoSGBM_create(
         minDisparity=min_disp,
         numDisparities=int(rounded_ndisp),
-        blockSize=16,
+        blockSize=15,
         P1=8 * 3 * window_size ** 2,
         P2=32 * 3 * window_size ** 2,
         disp12MaxDiff=1,
@@ -174,7 +189,7 @@ def normalize_image(image):
 def combine_images(right_img, disparity, groundtruth):
     disparity = cv2.cvtColor(disparity, cv2.COLOR_GRAY2BGR)
     groundtruth = cv2.cvtColor(groundtruth, cv2.COLOR_GRAY2BGR)
-    return cv2.hconcat([disparity, groundtruth, right_img])
+    return cv2.hconcat([disparity, groundtruth])
 
 def main():
     PATH = "roadmap/foundation/assets/stereo_data"
