@@ -121,49 +121,28 @@ class CalibrationFile():
         for idx, line in enumerate(self.data):
             self.parse_line(line, idx)
 
-def main():
+def load_images(basepath):
+    img0 = cv2.imread(f"{basepath}/im0.png")
+    img1 = cv2.imread(f"{basepath}/im1.png")
+    
+    groundtruth, _ = load_pfm(f"{basepath}/disp0.pfm")
+    groundtruth[np.isinf(groundtruth)] = 0
+    groundtruth = normalize_image(groundtruth)
+    groundtruth = cv2.flip(groundtruth, 0)
+    
+    return img0, img1, groundtruth
 
-    PATH = "roadmap/foundation/assets/stereo_data"
-    for basepath in glob.glob(PATH+"/*"):
-        print("Loading Stereo data from " + basepath)
-        file_data = read_calib_file(f"{basepath}/calib.txt")
-        cf = CalibrationFile(file_data)
-        cf.parse()
-        # bm(cf)
-        img0 = cv2.imread(basepath+"/im0.png")
-        img1  = cv2.imread(basepath+"/im1.png")
-        groundtruth,_ = load_pfm(basepath+"/disp0.pfm")
-        groundtruth[np.isinf(groundtruth)] = 0
-        groundtruth = normalize_image(groundtruth)
-        groundtruth = cv2.flip(groundtruth, 0)
-        sgdm(cf, img0, img1, groundtruth)
-        
-
-# Getting Started with Block Matching 
-def bm(cf):
-    left_img = cv2.imread('roadmap/foundation/assets/stereo_data/artroom1/im0.png', 0)
-    right_img = cv2.imread('roadmap/foundation/assets/stereo_data/artroom1/im1.png', 0)
-
-    rounded_ndisp = (int(cf.ndisp) + 15) // 16 * 16  # Round to the nearest multiple of 16
-    stereo = cv2.StereoBM_create(numDisparities=rounded_ndisp, blockSize=15)
-
-    disparity = stereo.compute(left_img, right_img)
-
-    plt.imshow(disparity, 'gray')
-    plt.show()
-
-# Semi-Global Block Matching (SGBM)
-def sgdm(cf, img0, img1, groundtruth) :
+def sgdm(cf, img0, img1, groundtruth):
     left_img = cv2.cvtColor(img0, cv2.COLOR_BGR2GRAY)
     right_img = cv2.cvtColor(img1, cv2.COLOR_BGR2GRAY)
-
+    
     window_size = 5
     min_disp = 16
-    rounded_ndisp = (int(cf.ndisp) + 15) // 16 * 16  # Round to the nearest multiple of 16
-    num_disp = rounded_ndisp
+    rounded_ndisp = (cf.ndisp + 15) // 16 * 16
+    
     stereo = cv2.StereoSGBM_create(
         minDisparity=min_disp,
-        numDisparities=num_disp,
+        numDisparities=int(rounded_ndisp),
         blockSize=16,
         P1=8 * 3 * window_size ** 2,
         P2=32 * 3 * window_size ** 2,
@@ -174,28 +153,41 @@ def sgdm(cf, img0, img1, groundtruth) :
         preFilterCap=63,
         mode=cv2.STEREO_SGBM_MODE_SGBM_3WAY
     )
-
+    
     disparity = stereo.compute(left_img, right_img)
+    display_images(img1, disparity, groundtruth)
 
-    right_img = cv2.resize(img1, (640,480))
-    # Normalize the disparity map
+def display_images(right_img, disparity, groundtruth):
+    right_img = cv2.resize(right_img, (640, 480))
     disparity_normalized = normalize_image(disparity)
-    print(groundtruth.shape)
-    ovrr = combine2image(right_img, disparity_normalized, groundtruth)
-    cv2.imshow('Normalized Disparity Map', ovrr)
+    
+    combined_image = combine_images(right_img, disparity_normalized, groundtruth)
+    cv2.imshow('Normalized Disparity Map', combined_image)
     cv2.waitKey(0)
 
-def normalize_image(disparity) :
-    # Normalize the disparity data for visualization
-    disparity = cv2.resize(disparity, (640,480))
-    min_val, max_val = disparity.min(), disparity.max()
-    disparity_normalized = ((disparity - min_val) / (max_val - min_val) * 255).astype('uint8')
-    return disparity_normalized
+def normalize_image(image):
+    image = cv2.resize(image, (640, 480))
+    min_val, max_val = image.min(), image.max()
+    normalized = ((image - min_val) / (max_val - min_val) * 255).astype('uint8')
+    return normalized
 
-def combine2image(right_img, disparity, groundtruth) :
+def combine_images(right_img, disparity, groundtruth):
     disparity = cv2.cvtColor(disparity, cv2.COLOR_GRAY2BGR)
     groundtruth = cv2.cvtColor(groundtruth, cv2.COLOR_GRAY2BGR)
     return cv2.hconcat([disparity, groundtruth, right_img])
+
+def main():
+    PATH = "roadmap/foundation/assets/stereo_data"
+    
+    for basepath in glob.glob(f"{PATH}/*"):
+        print(f"Loading Stereo data from {basepath}")
+        
+        file_data = read_calib_file(f"{basepath}/calib.txt")
+        cf = CalibrationFile(file_data)
+        cf.parse()
+        
+        img0, img1, groundtruth = load_images(basepath)
+        sgdm(cf, img0, img1, groundtruth)
 
 
 if __name__ == '__main__':
