@@ -2,7 +2,7 @@
 
 ### Disclaimer :
 
-I am starting this repo to revisit all the basics and fill in the gaps in my knowledge. I have several years of experience in Computer Vision and Deep Learning, but I haven't documented any notes for review. This repo is designed to address that exact issue. In the process, I aim to help people who are interested in building a strong foundation in the basics.
+I am starting this repo to revisit all the basics and fill in the gaps in my knowledge. I have several years of experience in Computer Vision and Deep Learning, but I haven't documented any notes for review. This repo is designed to address that exact issue. In the process, I aim to help people who are interested in building a strong foundation in the visual odo.
 
 1. Foundational Knowledge : 
 
