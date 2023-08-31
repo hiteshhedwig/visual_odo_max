@@ -151,7 +151,7 @@ def sgdm(cf, img0, img1, groundtruth):
     left_img = img0 #cv2.cvtColor(img0, cv2.COLOR_BGR2GRAY)
     right_img = img1 #cv2.cvtColor(img1, cv2.COLOR_BGR2GRAY)
     
-    window_size = 5
+    window_size = 3
     min_disp = 16
     rounded_ndisp = (cf.ndisp + 15) // 16 * 16
     
