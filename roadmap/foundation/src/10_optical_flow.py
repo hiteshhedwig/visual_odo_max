@@ -22,6 +22,7 @@ mask = np.zeros_like(old_frame)
 fourcc = cv2.VideoWriter_fourcc(*'XVID')
 out = cv2.VideoWriter('output_optical_flow.mp4', fourcc, 20.0, (1920, 1080))
 
+track_only_25 = []
 
 while True:
     ret, frame = cap.read()
@@ -46,19 +47,19 @@ while True:
     for i, (new, old) in enumerate(zip(good_new, good_old)):
         a, b = new.ravel()
         c, d = old.ravel()
-        mask = cv2.line(mask, (int(a), int(b)), (int(c), int(d)), (0, 255, 0), 2)
+        # mask = cv2.line(mask, (int(a), int(b)), (int(c), int(d)), (0, 255, 0), 2)
         frame = cv2.circle(frame, (int(a), int(b)), 5, (0, 0, 255), -1)
-
-        # # adjust box height so that reduces as person goes far away
-        # box_height = 200  # Replace with the desired height of the box
-        # box_width = int(box_height / 2)  # Width is half the height (2:1 ratio)
-        # center_point = (int(a), int(b))
-        # # Calculate the top-left and bottom-right points of the box
-        # top_left = (int(center_point[0] - box_width / 2), int(center_point[1] - box_height / 2))
-        # bottom_right = (int(center_point[0] + box_width / 2), int(center_point[1] + box_height / 2))
-        # cv2.rectangle(frame, top_left, bottom_right, (0, 255, 0), 2)
-
-        # print(a, b)
+        if len(track_only_25) < 25:
+            track_only_25.append([(int(a), int(b)), (int(c), int(d))])
+        else : 
+            track_only_25.pop(0)
+            track_only_25.append([(int(a), int(b)), (int(c), int(d))])
+            mask = np.zeros_like(frame)
+    
+    for pts in track_only_25 :
+        pt1 = pts[0]
+        pt2 = pts[1]
+        mask = cv2.line(mask, pt1, pt2, (0, 255, 0), 2)
 
     img = cv2.add(frame, mask)
 
