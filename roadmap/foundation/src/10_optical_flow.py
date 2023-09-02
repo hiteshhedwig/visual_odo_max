@@ -30,6 +30,13 @@ while True:
     good_old = p0[st == 1]
 
     # Draw the tracks
+    magnitudes = np.linalg.norm(good_new - good_old, axis=1)
+    threshold = 2.0  # Set your own threshold
+    good_new = good_new[magnitudes > threshold]
+    good_old = good_old[magnitudes > threshold]
+
+    if len(good_old) == 0 or len(good_new) == 0:
+        continue
     for i, (new, old) in enumerate(zip(good_new, good_old)):
         a, b = new.ravel()
         c, d = old.ravel()
