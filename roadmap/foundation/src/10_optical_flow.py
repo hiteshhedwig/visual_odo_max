@@ -2,7 +2,7 @@ import numpy as np
 import cv2
 
 # Initialize video capture
-cap = cv2.VideoCapture('/home/hedwig/Downloads/production_id 4793828 (1080p).mp4')
+cap = cv2.VideoCapture('/home/hedwig/Downloads/pexels-josh-withers-17788339 (1080p).mp4')
 
 # Parameters for ShiTomasi corner detection
 feature_params = dict(maxCorners=100, qualityLevel=0.6, minDistance=7, blockSize=7)
@@ -20,22 +20,28 @@ mask = np.zeros_like(old_frame)
 
 # Initialize video writer
 fourcc = cv2.VideoWriter_fourcc(*'XVID')
-out = cv2.VideoWriter('output_optical_flow.mp4', fourcc, 20.0, (1920, 1080))
+out = cv2.VideoWriter('output_optical_flow_arieal.mp4', fourcc, 20.0, (1920, 1080))
 
 track_only_25 = []
 
 while True:
     ret, frame = cap.read()
+    print(frame.shape)
     frame_gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+
+    # Get the frames per second
+    fps = cap.get(cv2.CAP_PROP_FPS)
+
+    print(f"The FPS of the video is: {fps}")
 
     # Calculate optical flow using Lucas-Kanade method
     p1, st, err = cv2.calcOpticalFlowPyrLK(old_gray, frame_gray, p0, None, **lk_params)
 
-    # Select good points
+    # # Select good points
     good_new = p1[st == 1]
     good_old = p0[st == 1]
 
-    # Draw the tracks
+    # # Draw the tracks
     magnitudes = np.linalg.norm(good_new - good_old, axis=1)
     threshold = 2.0  # Set your own threshold
     good_new = good_new[magnitudes > threshold]
@@ -57,8 +63,7 @@ while True:
             mask = np.zeros_like(frame)
     
     for pts in track_only_25 :
-        pt1 = pts[0]
-        pt2 = pts[1]
+        pt1, pt2 = pts
         mask = cv2.line(mask, pt1, pt2, (0, 255, 0), 2)
 
     img = cv2.add(frame, mask)
@@ -71,7 +76,7 @@ while True:
     out.write(img_resized)
 
     # Show the image
-    cv2.imshow('Optical Flow - Lucas-Kanade', img)
+    # cv2.imshow('Optical Flow - Lucas-Kanade', img)
 
     # Update the previous frame and previous points
     old_gray = frame_gray.copy()
