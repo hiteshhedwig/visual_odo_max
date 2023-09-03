@@ -13,7 +13,7 @@ def load_image(filename):
 
 def load_paranoma_images(PATH) :
     paths = []
-    for path in glob.glob(PATH+"*.jpg"):
+    for path in glob.glob(PATH+"mount*.jpg"):
         paths.append(path)
     sorted_paths = sorted(paths)
     print(sorted_paths)
@@ -64,6 +64,33 @@ def homography_estimation(kp_desc_1, kp_desc_2, good_matches):
     ransac_matches = [good_matches[i] for i, val in enumerate(inliers.ravel()) if val == 1]
     return H,ransac_matches
 
+def laplacian_pyramid(img, levels):
+    pyramid = []
+    for i in range(levels):
+        next_img = cv2.pyrDown(img)
+        up_img = cv2.pyrUp(next_img, dstsize=(img.shape[1], img.shape[0]))
+        laplacian = cv2.subtract(img, up_img)
+        pyramid.append(laplacian)
+        img = next_img
+    pyramid.append(img)
+    return pyramid
+
+def blend_pyramids(lap_pyr1, lap_pyr2):
+    blended_pyr = []
+    for lap1, lap2 in zip(lap_pyr1, lap_pyr2):
+        rows, cols, _ = lap1.shape
+        laplacian = np.hstack((lap1[:, :cols//2], lap2[:, cols//2:]))
+        blended_pyr.append(laplacian)
+    return blended_pyr
+
+def reconstruct_image(lap_pyr):
+    img = lap_pyr[-1]
+    for i in range(len(lap_pyr) - 2, -1, -1):
+        img = cv2.pyrUp(img, dstsize=(lap_pyr[i].shape[1], lap_pyr[i].shape[0]))
+        img = cv2.add(img, lap_pyr[i])
+    return img
+
+
 def main():
     PATH = "roadmap/foundation/assets/paranoma/"
     images =  load_paranoma_images(PATH)
@@ -82,16 +109,28 @@ def main():
     # Draw matches
     img_matches = cv2.drawMatches(img0, keypoints1, img1, keypoints2, ransac_matches, None, flags=cv2.DrawMatchesFlags_NOT_DRAW_SINGLE_POINTS)
 
+    # Warp image
+    height, width, channels = img1.shape
+    img0_warped = cv2.warpPerspective(img0, computed_homography, (width, height))
+
+    # Simple blending
+    # result = img1.copy()
+    # result[np.where(img0_warped != 0)] = img0_warped[np.where(img0_warped != 0)]
+
+    levels = 1  # Number of pyramid levels
+    lap_pyr1 = laplacian_pyramid(img0_warped, levels)
+    lap_pyr2 = laplacian_pyramid(img1, levels)
+
+    blended_pyr = blend_pyramids(lap_pyr1, lap_pyr2)
+
+    result = reconstruct_image(blended_pyr)
+
     # Show the results
     cv2.imshow('SIFT Feature Matching', img_matches)
+    cv2.imshow("Multi-Band Blending ", result)
     cv2.waitKey(0)
     cv2.destroyAllWindows()
 
-
-
-
-
-    
 
 if __name__ == '__main__' :
     main()
