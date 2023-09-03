@@ -75,20 +75,43 @@ def laplacian_pyramid(img, levels):
     pyramid.append(img)
     return pyramid
 
-def blend_pyramids(lap_pyr1, lap_pyr2):
-    blended_pyr = []
-    for lap1, lap2 in zip(lap_pyr1, lap_pyr2):
-        rows, cols, _ = lap1.shape
-        laplacian = np.hstack((lap1[:, :cols//2], lap2[:, cols//2:]))
-        blended_pyr.append(laplacian)
+def blend_pyramids(lap_pyr_list):
+    # Initialize the blended pyramid with zeros, using the shape of the first pyramid
+    blended_pyr = [np.zeros(lap.shape) for lap in lap_pyr_list[0]]
+
+    # Calculate the number of pyramids
+    num_pyr = len(lap_pyr_list)
+
+    # Iterate through each level of the pyramid
+    for level in range(len(blended_pyr)):
+        # Iterate through each pyramid
+        for lap_pyr in lap_pyr_list:
+            # Add the contribution of each pyramid to the blended pyramid at this level
+            blended_pyr[level] += lap_pyr[level] / num_pyr
+
     return blended_pyr
 
-def reconstruct_image(lap_pyr):
-    img = lap_pyr[-1]
-    for i in range(len(lap_pyr) - 2, -1, -1):
-        img = cv2.pyrUp(img, dstsize=(lap_pyr[i].shape[1], lap_pyr[i].shape[0]))
-        img = cv2.add(img, lap_pyr[i])
-    return img
+def reconstruct_and_combine(lap_pyr_results):
+    # Initialize an empty image for accumulating the results
+    final_img = None
+    
+    for lap_pyr in lap_pyr_results:
+        # Reconstruct the image from its Laplacian pyramid
+        img = lap_pyr[-1]
+        for i in range(len(lap_pyr) - 2, -1, -1):
+            img = cv2.pyrUp(img, dstsize=(lap_pyr[i].shape[1], lap_pyr[i].shape[0]))
+            img = cv2.add(img, lap_pyr[i])
+        
+        # Accumulate the reconstructed image
+        if final_img is None:
+            final_img = img
+        else:
+            # Assuming the images are aligned and of the same size
+            img = img.astype(final_img.dtype)
+            final_img = cv2.addWeighted(final_img, 0.5, img, 0.5, 0)
+    
+    return final_img
+
 
 def combine_images(images):
     result = images[0]
@@ -96,17 +119,23 @@ def combine_images(images):
         result = cv2.hconcat([result, image])
     return result
 
+def normalize(img):
+    min_val = np.min(img)
+    max_val = np.max(img)
+    return ((img - min_val) / (max_val - min_val) * 255).astype(np.uint8)
+
+
 def main():
     PATH = "roadmap/foundation/assets/paranoma/"
-    images =  load_paranoma_images(PATH)
+    images = load_paranoma_images(PATH)
 
-    # modified code for 3 images!
-    # images = images[2:4]
-    # levels_arr = [1,1]
-    prev_results = []
+
+    lap_pyr_results = []
+    first_image = True
     for img0, img1 in zip(images, images[1:]):
         img0_grey = cv2.cvtColor(img0, cv2.COLOR_BGR2GRAY)
         img1_grey = cv2.cvtColor(img1, cv2.COLOR_BGR2GRAY)
+        
         keypoints1, descriptors1 = get_sift_feature(img0_grey)
         keypoints2, descriptors2 = get_sift_feature(img1_grey)
 
@@ -117,22 +146,26 @@ def main():
         height, width, channels = img1.shape
         img0_warped = cv2.warpPerspective(img0, computed_homography, (width, height))
 
-        # levels = 6  # Number of pyramid levels
-        # lap_pyr1 = laplacian_pyramid(img0_warped, levels)
-        # lap_pyr2 = laplacian_pyramid(img1, levels)
-        # blended_pyr = blend_pyramids(lap_pyr1, lap_pyr2)
+        levels = 3  # Number of pyramid levels
+        lap_pyr1 = laplacian_pyramid(img0_warped, levels)
+        lap_pyr2 = laplacian_pyramid(img1, levels)
 
-        # result = reconstruct_image(blended_pyr)
-        result = img1.copy()
-        result[np.where(img0_warped != 0)] = img0_warped[np.where(img0_warped != 0)]
+        if first_image:
+            lap_pyr_results.append(lap_pyr1)
+            first_image = False
 
-        prev_results.append(result)
+        lap_pyr_results.append(lap_pyr2)
 
-        final_results = combine_images(prev_results)
+        # Blend the current pair and store as the new base for the next iteration
+        blended_pyr = blend_pyramids([lap_pyr_results[-2], lap_pyr_results[-1]])
+        lap_pyr_results[-1] = blended_pyr
 
-        # Show the results
-        cv2.imshow("Multi-Band Blending ", final_results)
-        cv2.waitKey(0)
+    # Reconstruct the final blended image from the last pyramid in the list
+    result = reconstruct_and_combine(lap_pyr_results)
+
+    # Show the results
+    cv2.imshow("Multi-Band Blending ", normalize(result))
+    cv2.waitKey(0)
 
     cv2.destroyAllWindows()
 
