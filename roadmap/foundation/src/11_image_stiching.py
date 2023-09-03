@@ -27,16 +27,10 @@ def get_sift_feature(img):
     keypoints1, descriptors1 = sift.detectAndCompute(img, None)
     return keypoints1, descriptors1
 
-def main():
-    PATH = "roadmap/foundation/assets/paranoma/"
-    images =  load_paranoma_images(PATH)
+def get_good_matches(kp_desc_1, kp_desc_2):
 
-    img0, img1 = images[:2]
-    img0_grey = cv2.cvtColor(img0, cv2.COLOR_BGR2GRAY)
-    img1_grey = cv2.cvtColor(img1, cv2.COLOR_BGR2GRAY)
-    keypoints1, descriptors1 = get_sift_feature(img0_grey)
-    keypoints2, descriptors2 = get_sift_feature(img1_grey)
-
+    descriptors1 = kp_desc_1[1]
+    descriptors2 = kp_desc_2[1]
     # Initialize FLANN-based matcher
     FLANN_INDEX_KDTREE = 0
     index_params = dict(algorithm=FLANN_INDEX_KDTREE, trees=5)
@@ -51,6 +45,19 @@ def main():
     for m, n in matches:
         if m.distance < 0.7 * n.distance:
             good_matches.append(m)
+    return good_matches
+
+def main():
+    PATH = "roadmap/foundation/assets/paranoma/"
+    images =  load_paranoma_images(PATH)
+
+    img0, img1 = images[:2]
+    img0_grey = cv2.cvtColor(img0, cv2.COLOR_BGR2GRAY)
+    img1_grey = cv2.cvtColor(img1, cv2.COLOR_BGR2GRAY)
+    keypoints1, descriptors1 = get_sift_feature(img0_grey)
+    keypoints2, descriptors2 = get_sift_feature(img1_grey)
+
+    good_matches = get_good_matches((keypoints1, descriptors1), (keypoints2, descriptors2))
 
     # Draw matches
     img_matches = cv2.drawMatches(img0, keypoints1, img1, keypoints2, good_matches, None, flags=cv2.DrawMatchesFlags_NOT_DRAW_SINGLE_POINTS)
