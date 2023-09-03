@@ -28,6 +28,23 @@ The primary goal of this project is to create a panoramic image by stitching tog
 
 - **Real-world Testing**: Try your algorithm on a variety of scenes—indoor, outdoor, landscapes, and cityscapes—to see how well it generalizes.
 
+### BLENDING TECHNIQUES :
+
+Multi-Band Blending
+What is it?
+    Multi-band blending is an advanced image blending technique that divides each image into multiple frequency bands (low-frequency and high-frequency components) and blends them separately.
+
+How Does it Work?
+
+    Decomposition: Each image is decomposed into a Laplacian pyramid, which separates the image into multiple layers of different frequency bands.
+    Blending: The corresponding layers from the two images are blended together. This is usually done by taking the pixels from one image on one side of the seam and the pixels from the other image on the other side.
+    Reconstruction: The blended Laplacian pyramid is then collapsed back into a single image.
+
+Why Use it?
+
+    This technique is effective because it allows you to preserve the details in both the high-frequency and low-frequency components of the images. This results in a more natural and less noticeable seam.
+
+
 ### Relevance to Visual Odometry (VO)
 
 While the primary focus is on creating panoramas, the techniques learned here are directly applicable to VO. Feature matching and homography estimation are often used in VO for frame-to-frame alignment, and understanding these in the context of image stitching will deepen your understanding of their role in VO.
