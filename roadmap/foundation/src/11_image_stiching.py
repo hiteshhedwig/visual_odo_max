@@ -47,6 +47,22 @@ def get_good_matches(kp_desc_1, kp_desc_2):
             good_matches.append(m)
     return good_matches
 
+def homography_estimation(kp_desc_1, kp_desc_2, good_matches):
+    keypoints1, descriptors1 = kp_desc_1
+    keypoints2, descriptors2 = kp_desc_2
+
+    # Extract the coordinates of matched keypoints
+    src_pts = np.float32([keypoints1[m.queryIdx].pt for m in good_matches])
+    dst_pts = np.float32([keypoints2[m.trainIdx].pt for m in good_matches])
+
+    # use ransac : 
+    _, inliers = cv2.findFundamentalMat(src_pts, dst_pts, cv2.FM_RANSAC)
+    # Filter matches using the inliers
+    ransac_matches = [good_matches[i] for i, val in enumerate(inliers) if val == 1]
+
+    return ransac_matches
+
+
 def main():
     PATH = "roadmap/foundation/assets/paranoma/"
     images =  load_paranoma_images(PATH)
@@ -59,8 +75,10 @@ def main():
 
     good_matches = get_good_matches((keypoints1, descriptors1), (keypoints2, descriptors2))
 
+    ransac_matches = homography_estimation((keypoints1, descriptors1), (keypoints2, descriptors2), good_matches)
+
     # Draw matches
-    img_matches = cv2.drawMatches(img0, keypoints1, img1, keypoints2, good_matches, None, flags=cv2.DrawMatchesFlags_NOT_DRAW_SINGLE_POINTS)
+    img_matches = cv2.drawMatches(img0, keypoints1, img1, keypoints2, ransac_matches, None, flags=cv2.DrawMatchesFlags_NOT_DRAW_SINGLE_POINTS)
 
     # Show the results
     cv2.imshow('SIFT Feature Matching', img_matches)
