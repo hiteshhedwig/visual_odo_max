@@ -13,7 +13,7 @@ def load_image(filename):
 
 def load_paranoma_images(PATH) :
     paths = []
-    for path in glob.glob(PATH+"mount*.jpg"):
+    for path in glob.glob(PATH+"img*.jpg"):
         paths.append(path)
     sorted_paths = sorted(paths)
     print(sorted_paths)
@@ -124,51 +124,50 @@ def normalize(img):
     max_val = np.max(img)
     return ((img - min_val) / (max_val - min_val) * 255).astype(np.uint8)
 
+def reconstruct_image(lap_pyr):
+    img = lap_pyr[-1]  # Start with the smallest image
+    for i in range(len(lap_pyr) - 2, -1, -1):  # Traverse the pyramid from bottom to top
+        img = cv2.pyrUp(img, dstsize=(lap_pyr[i].shape[1], lap_pyr[i].shape[0]))  # Upsample the image
+        img = cv2.add(img, lap_pyr[i])  # Add the Laplacian image
+    return img
+
+def reconstruct_and_combine(lap_pyr_results):
+    final_img = None
+    for lap_pyr in lap_pyr_results:
+        img = reconstruct_image(lap_pyr)
+        if final_img is None:
+            final_img = img
+        else:
+            final_img = cv2.hconcat([final_img, img])
+    return final_img
 
 def main():
     PATH = "roadmap/foundation/assets/paranoma/"
     images = load_paranoma_images(PATH)
-
-
     lap_pyr_results = []
-    first_image = True
+    accumulated_pyr = None
+    result = images[0]
+
     for img0, img1 in zip(images, images[1:]):
         img0_grey = cv2.cvtColor(img0, cv2.COLOR_BGR2GRAY)
         img1_grey = cv2.cvtColor(img1, cv2.COLOR_BGR2GRAY)
-        
         keypoints1, descriptors1 = get_sift_feature(img0_grey)
         keypoints2, descriptors2 = get_sift_feature(img1_grey)
-
         good_matches = get_good_matches((keypoints1, descriptors1), (keypoints2, descriptors2))
-        computed_homography, _ = homography_estimation((keypoints1, descriptors1), (keypoints2, descriptors2), good_matches)
-
-        # Warp image
+        computed_homography,_ = homography_estimation((keypoints1, descriptors1), (keypoints2, descriptors2), good_matches)
         height, width, channels = img1.shape
         img0_warped = cv2.warpPerspective(img0, computed_homography, (width, height))
 
-        levels = 3  # Number of pyramid levels
-        lap_pyr1 = laplacian_pyramid(img0_warped, levels)
-        lap_pyr2 = laplacian_pyramid(img1, levels)
-
-        if first_image:
-            lap_pyr_results.append(lap_pyr1)
-            first_image = False
-
-        lap_pyr_results.append(lap_pyr2)
-
-        # Blend the current pair and store as the new base for the next iteration
-        blended_pyr = blend_pyramids([lap_pyr_results[-2], lap_pyr_results[-1]])
-        lap_pyr_results[-1] = blended_pyr
-
-    # Reconstruct the final blended image from the last pyramid in the list
-    result = reconstruct_and_combine(lap_pyr_results)
+        blended_img = img1.copy()
+        blended_img[np.where(img0_warped != 0)] = img0_warped[np.where(img0_warped != 0)]
+        
+        # Update the result (assuming the images are aligned)
+        result[np.where(blended_img != 0)] = blended_img[np.where(blended_img != 0)]
 
     # Show the results
     cv2.imshow("Multi-Band Blending ", normalize(result))
     cv2.waitKey(0)
-
     cv2.destroyAllWindows()
 
-
-if __name__ == '__main__' :
+if __name__ == '__main__':
     main()
