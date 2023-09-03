@@ -95,40 +95,35 @@ def main():
     PATH = "roadmap/foundation/assets/paranoma/"
     images =  load_paranoma_images(PATH)
 
-    img0, img1 = images[:2]
-    img0_grey = cv2.cvtColor(img0, cv2.COLOR_BGR2GRAY)
-    img1_grey = cv2.cvtColor(img1, cv2.COLOR_BGR2GRAY)
-    keypoints1, descriptors1 = get_sift_feature(img0_grey)
-    keypoints2, descriptors2 = get_sift_feature(img1_grey)
+    # modified code for 3 images!
+    # images = images[2:4]
+    # levels_arr = [1,1]
+    for img0, img1 in zip(images, images[1:]):
+        img0_grey = cv2.cvtColor(img0, cv2.COLOR_BGR2GRAY)
+        img1_grey = cv2.cvtColor(img1, cv2.COLOR_BGR2GRAY)
+        keypoints1, descriptors1 = get_sift_feature(img0_grey)
+        keypoints2, descriptors2 = get_sift_feature(img1_grey)
 
-    good_matches = get_good_matches((keypoints1, descriptors1), (keypoints2, descriptors2))
+        good_matches = get_good_matches((keypoints1, descriptors1), (keypoints2, descriptors2))
+        computed_homography, _ = homography_estimation((keypoints1, descriptors1), (keypoints2, descriptors2), good_matches)
 
-    computed_homography, ransac_matches = homography_estimation((keypoints1, descriptors1), (keypoints2, descriptors2), good_matches)
-    print(computed_homography.shape)
+        # Warp image
+        height, width, channels = img1.shape
+        img0_warped = cv2.warpPerspective(img0, computed_homography, (width, height))
 
-    # Draw matches
-    img_matches = cv2.drawMatches(img0, keypoints1, img1, keypoints2, ransac_matches, None, flags=cv2.DrawMatchesFlags_NOT_DRAW_SINGLE_POINTS)
+        # levels = 6  # Number of pyramid levels
+        # lap_pyr1 = laplacian_pyramid(img0_warped, levels)
+        # lap_pyr2 = laplacian_pyramid(img1, levels)
+        # blended_pyr = blend_pyramids(lap_pyr1, lap_pyr2)
 
-    # Warp image
-    height, width, channels = img1.shape
-    img0_warped = cv2.warpPerspective(img0, computed_homography, (width, height))
+        # result = reconstruct_image(blended_pyr)
+        result = img1.copy()
+        result[np.where(img0_warped != 0)] = img0_warped[np.where(img0_warped != 0)]
 
-    # Simple blending
-    # result = img1.copy()
-    # result[np.where(img0_warped != 0)] = img0_warped[np.where(img0_warped != 0)]
+        # Show the results
+        cv2.imshow("Multi-Band Blending ", result)
+        cv2.waitKey(0)
 
-    levels = 1  # Number of pyramid levels
-    lap_pyr1 = laplacian_pyramid(img0_warped, levels)
-    lap_pyr2 = laplacian_pyramid(img1, levels)
-
-    blended_pyr = blend_pyramids(lap_pyr1, lap_pyr2)
-
-    result = reconstruct_image(blended_pyr)
-
-    # Show the results
-    cv2.imshow('SIFT Feature Matching', img_matches)
-    cv2.imshow("Multi-Band Blending ", result)
-    cv2.waitKey(0)
     cv2.destroyAllWindows()
 
 
