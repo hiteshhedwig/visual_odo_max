@@ -56,7 +56,6 @@ def homography_estimation(kp_desc_1, kp_desc_2, good_matches):
     dst_pts = np.float32([keypoints2[m.trainIdx].pt for m in good_matches])
 
     # use ransac : 
-    _, matched_matrix = cv2.findHomography(src_pts, dst_pts, cv2.RANSAC)
     H, inliers = cv2.findHomography(src_pts, dst_pts, cv2.RANSAC, 5.0)
     if inliers is None:
         raise ValueError("Homography not found !")
