@@ -90,6 +90,11 @@ def reconstruct_image(lap_pyr):
         img = cv2.add(img, lap_pyr[i])
     return img
 
+def combine_images(images):
+    result = images[0]
+    for image in images[1:]:
+        result = cv2.hconcat([result, image])
+    return result
 
 def main():
     PATH = "roadmap/foundation/assets/paranoma/"
@@ -98,6 +103,7 @@ def main():
     # modified code for 3 images!
     # images = images[2:4]
     # levels_arr = [1,1]
+    prev_results = []
     for img0, img1 in zip(images, images[1:]):
         img0_grey = cv2.cvtColor(img0, cv2.COLOR_BGR2GRAY)
         img1_grey = cv2.cvtColor(img1, cv2.COLOR_BGR2GRAY)
@@ -120,8 +126,12 @@ def main():
         result = img1.copy()
         result[np.where(img0_warped != 0)] = img0_warped[np.where(img0_warped != 0)]
 
+        prev_results.append(result)
+
+        final_results = combine_images(prev_results)
+
         # Show the results
-        cv2.imshow("Multi-Band Blending ", result)
+        cv2.imshow("Multi-Band Blending ", final_results)
         cv2.waitKey(0)
 
     cv2.destroyAllWindows()
