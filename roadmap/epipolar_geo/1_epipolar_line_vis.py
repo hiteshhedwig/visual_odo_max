@@ -79,6 +79,13 @@ def feature_matching_with_ransac(images, kp_des_list):
 
     return fundamental_mat, kp1, kp2, ransac_matches, src_pts_ransac, dst_pts_ransac
 
+def to_homogeneous_points(pts):
+    return np.array([pts[0], pts[1], 1]).reshape(3,1)
+
+def compute_epipolar_line(fundamental_mat, pts):
+    homogenous_pts = to_homogeneous_points(pts)
+    epipolar_line = fundamental_mat@homogenous_pts
+    return epipolar_line
 
 def select_point(event, x, y, flags, param):
     global selected_point, img0, img1
@@ -107,7 +114,7 @@ img1 = None
 selected_point = None
 
 def main():
-    global img0, img1
+    global img0, img1, selected_point
 
     img0 = load_image_from_asset(imgs_name[0])
     img1 = load_image_from_asset(imgs_name[1])
@@ -122,6 +129,8 @@ def main():
 
     display_window()
     close_window()
+
+    epipolar_line = compute_epipolar_line(fundamental_mat, selected_point)
 
 
         
