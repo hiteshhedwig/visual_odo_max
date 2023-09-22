@@ -8,12 +8,12 @@ I am starting this repo to revisit all the basics and fill in the gaps in my kno
 
 - [**Done**] Linear Algebra: Understand matrices, vectors, eigenvalues, and eigenvectors.
 - [**Done**] Probability and Statistics: Basics of probability, Bayes' theorem, and statistical estimation techniques.
-- [**Ongoing**] Computer Vision Basics: Familiarize yourself with image processing, feature extraction, and camera models.
+- [**Done**] Computer Vision Basics: Familiarize yourself with image processing, feature extraction, and camera models.
 
 2. Understand Camera Models and Calibration:
 
-- Learn about different camera models, especially the pinhole camera model.
-- Understand camera calibration techniques to determine intrinsic and extrinsic parameters.
+- [**Done**] Learn about different camera models, especially the pinhole camera model.
+- [**Done**] Understand camera calibration techniques to determine intrinsic and extrinsic parameters.
 
 3. Study Epipolar Geometry:
 
