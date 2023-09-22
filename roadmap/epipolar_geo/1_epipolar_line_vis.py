@@ -84,8 +84,21 @@ def to_homogeneous_points(pts):
 
 def compute_epipolar_line(fundamental_mat, pts):
     homogeneous_pts = to_homogeneous_points(pts)
-    epipolar_line = fundamental_mat@homogeneous_pts
-    return epipolar_line
+    homogeneous_epipolar_line = fundamental_mat@homogeneous_pts
+    return homogeneous_epipolar_line.T[0]
+
+def draw_epipolar_line(img, epipolar_line):
+    # Determine two points on the epipolar line
+    a,b,c = epipolar_line
+    y1 = (-c - a*0) / b
+    y2 = (-c - a*img.shape[1]) / b
+    pt1 = (0, int(y1))
+    pt2 = (img.shape[1], int(y2))
+
+    # Draw the epipolar line on the image
+    return cv2.line(img, pt1, pt2, (0, 255, 0), 2)  # Drawing the line in green color with thickness 2
+
+
 
 def select_point(event, x, y, flags, param):
     global selected_point, img0, img1
@@ -96,14 +109,14 @@ def select_point(event, x, y, flags, param):
         cv2.circle(img0, selected_point, 5, (0, 0, 255), -1)  # Draw a red circle at the selected point
         cv2.imshow("Stereo Image", img0)
 
-def display_window():
-    global img0, img1
+def display_window(title , img):
+    # global img0, img1
 
     # Create a window and set the mouse callback to our function
-    cv2.namedWindow("Stereo Image")
-    cv2.setMouseCallback("Stereo Image", select_point)
+    cv2.namedWindow(title)
+    cv2.setMouseCallback(title, select_point)
 
-    cv2.imshow("Stereo Image", img0)
+    cv2.imshow(title, img)
     cv2.waitKey(0)
 
 def close_window():
@@ -127,18 +140,15 @@ def main():
     fundamental_mat, kp1, kp2, ransac_matches, src_pts_ransac, dst_pts_ransac = feature_matching_with_ransac(img_arr, kp_des_list)
     print(fundamental_mat)
 
-    display_window()
+    display_window("Stereo Image", img0)
     close_window()
 
     epipolar_line = compute_epipolar_line(fundamental_mat, selected_point)
+    print(epipolar_line)
 
-
-        
-
-
-
-
-
+    annotated_img = draw_epipolar_line(img1, epipolar_line)
+    display_window("EPIPOLAR LINES",annotated_img)
+    close_window()
 
 if __name__ == '__main__':
     main()
