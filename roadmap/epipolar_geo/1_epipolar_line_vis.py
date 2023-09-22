@@ -79,15 +79,56 @@ def feature_matching_with_ransac(images, kp_des_list):
 
     return fundamental_mat, kp1, kp2, ransac_matches, src_pts_ransac, dst_pts_ransac
 
+
+def select_point(event, x, y, flags, param):
+    global selected_point, img0, img1
+
+    if event == cv2.EVENT_LBUTTONDOWN:
+        selected_point = (x, y)
+        print(f"Selected Point: {selected_point}")
+        cv2.circle(img0, selected_point, 5, (0, 0, 255), -1)  # Draw a red circle at the selected point
+        cv2.imshow("Stereo Image", img0)
+
+def display_window():
+    global img0, img1
+
+    # Create a window and set the mouse callback to our function
+    cv2.namedWindow("Stereo Image")
+    cv2.setMouseCallback("Stereo Image", select_point)
+
+    cv2.imshow("Stereo Image", img0)
+    cv2.waitKey(0)
+
+def close_window():
+    cv2.destroyAllWindows()
+
+img0 = None
+img1 = None
+selected_point = None
+
 def main():
+    global img0, img1
+
     img0 = load_image_from_asset(imgs_name[0])
     img1 = load_image_from_asset(imgs_name[1])
 
     img_arr = [img0, img1]
     # extract features from the image and match them 
     kp_des_list = orb_keypoints(img_arr)
+
+    # match and compute fundamental matrix
     fundamental_mat, kp1, kp2, ransac_matches, src_pts_ransac, dst_pts_ransac = feature_matching_with_ransac(img_arr, kp_des_list)
     print(fundamental_mat)
+
+    display_window()
+    close_window()
+
+
+        
+
+
+
+
 
 
 if __name__ == '__main__':
