@@ -83,8 +83,8 @@ def to_homogeneous_points(pts):
     return np.array([pts[0], pts[1], 1]).reshape(3,1)
 
 def compute_epipolar_line(fundamental_mat, pts):
-    homogenous_pts = to_homogeneous_points(pts)
-    epipolar_line = fundamental_mat@homogenous_pts
+    homogeneous_pts = to_homogeneous_points(pts)
+    epipolar_line = fundamental_mat@homogeneous_pts
     return epipolar_line
 
 def select_point(event, x, y, flags, param):
