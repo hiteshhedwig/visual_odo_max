@@ -106,7 +106,7 @@ def select_point(event, x, y, flags, param):
     if event == cv2.EVENT_LBUTTONDOWN:
         selected_point = (x, y)
         print(f"Selected Point: {selected_point}")
-        cv2.circle(img0, selected_point, 5, (0, 0, 255), -1)  # Draw a red circle at the selected point
+        cv2.circle(img0, selected_point, 15, (0, 0, 255), -1)  # Draw a red circle at the selected point
         cv2.imshow("Stereo Image", img0)
 
 def display_window(title , img):

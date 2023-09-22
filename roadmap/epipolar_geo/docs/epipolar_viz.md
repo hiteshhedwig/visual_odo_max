@@ -47,3 +47,11 @@ When two cameras capture an image of the same point in a scene, the line connect
 
 **Outcome**:
 By the end of this project, you will have a hands-on understanding of how epipolar lines work and the geometric relationship between stereo images. This knowledge is foundational for many advanced computer vision tasks, including 3D reconstruction and stereo correspondence.
+
+
+### Point on the left camera image
+![Example Image](../assets/point_image.png)
+
+### Epipolar line on the right camera image
+![Example Image](../assets/epipolar_line.png)
+
