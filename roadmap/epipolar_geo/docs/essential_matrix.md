@@ -43,7 +43,7 @@ The Essential Matrix `E` is then defined as:
 
 Where `[t]_x` is the skew-symmetric matrix of `t`.
 
-
+> To find t & R from E. We use SVD, we'll explain it in code. It'll be much simpler.
 
 ## Examples
 1. **Two Cameras with Known Pose**: If you have two cameras with known relative pose (rotation and translation), you can compute the Essential Matrix using the formula `E = [t]_x * R`.
