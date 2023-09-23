@@ -4,6 +4,7 @@ from matplotlib import pyplot as plt
 from roadmap.epipolar_geo.rectification_stereo import estimate_essential_matrix, decompose_essential_matrix, \
                 validate_cheirality_condition, get_3d_triangulated_points
 
+
 imgs_name = [
     "im0.png",
     "im1.png",
@@ -181,12 +182,20 @@ def main():
     rectified_left = cv2.remap(img0, map1_left, map2_left, interpolation=cv2.INTER_LINEAR)
     rectified_right = cv2.remap(img1, map1_right, map2_right, interpolation=cv2.INTER_LINEAR)
 
-    
 
-    cv2.imshow('Rectified Left Image', rectified_left)
-    cv2.imshow('Rectified Right Image', rectified_right)
-    cv2.waitKey(0)
-    cv2.destroyAllWindows()
+    # get 3d points of all the matches -
+    points_3D, P1, P2 = get_3d_triangulated_points(INTRINSIC_MATRIX, R, t, src_pts, dst_pts)
+    print(len(points_3D.ravel()))
+    print(len(src_pts))
+
+    fig = plt.figure()
+    ax = fig.add_subplot(111, projection='3d')
+    ax.scatter(points_3D[0], points_3D[1], points_3D[2], c='b', marker='o')
+
+    ax.set_xlabel('X')
+    ax.set_ylabel('Y')
+    ax.set_zlabel('Z')
+    plt.show()
 
 
 if __name__ == '__main__':

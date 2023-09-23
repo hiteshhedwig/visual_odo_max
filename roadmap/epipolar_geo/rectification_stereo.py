@@ -51,9 +51,8 @@ def get_3d_triangulated_points(K, rot, tra, pts1, pts2):
         points_3D_homogeneous = cv2.triangulatePoints(Projection_1, Projection_2, pt1, pt2)
         # Convert from homogeneous to regular 3D coordinates
         points_3D = points_3D_homogeneous[:3] / points_3D_homogeneous[3]
-        points3d.append(points_3D)
-    return np.array(points3d), Projection_1, Projection_2
-
+        points3d.append(points_3D.ravel())
+    return np.array(points3d).T, Projection_1, Projection_2
 
 
 def validate_cheirality_condition(K, rotations_arr, translation_arr, pt1, pt2):
