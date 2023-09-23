@@ -1,11 +1,19 @@
 import cv2
 import numpy as np  
 from matplotlib import pyplot as plt
+from roadmap.epipolar_geo.rectification_stereo import estimate_essential_matrix, decompose_essential_matrix, \
+                validate_cheirality_condition, get_3d_triangulated_points
 
 imgs_name = [
     "im0.png",
     "im1.png",
 ]
+
+INTRINSIC_MATRIX = np.array([
+                                [1733.74,  0,     792.27],
+                                [0,      1733.74, 541.89],
+                                [0,        0,     1]
+                            ])
 
 PATH = "roadmap/foundation/assets/stereo_data/artroom1/"
 
@@ -137,7 +145,7 @@ def main():
     kp_des_list = orb_keypoints(img_arr)
 
     # match and compute fundamental matrix
-    fundamental_mat, kp1, kp2, ransac_matches, src_pts_ransac, dst_pts_ransac = feature_matching_with_ransac(img_arr, kp_des_list)
+    fundamental_mat, kp1, kp2, ransac_matches, src_pts, dst_pts = feature_matching_with_ransac(img_arr, kp_des_list)
     print(fundamental_mat)
 
     display_window("Stereo Image", img0)
@@ -149,6 +157,31 @@ def main():
     annotated_img = draw_epipolar_line(img1, epipolar_line)
     display_window("EPIPOLAR LINES",annotated_img)
     close_window()
+
+    # estimate essential matrices
+    essential_mat = estimate_essential_matrix(fundamental_mat, INTRINSIC_MATRIX, INTRINSIC_MATRIX)
+    print("Essential Matrix " , essential_mat)
+
+    # get possible rotation and translation matrices
+    possible_rotations, possible_translations = decompose_essential_matrix(essential_matrix=essential_mat)
+    print(possible_rotations[0].shape)
+
+    # cheirality verification
+    R,t = validate_cheirality_condition(INTRINSIC_MATRIX, possible_rotations, possible_translations, src_pts[0], dst_pts[0])
+    print("Valid rotation and translation matrices \n", R, "\n\n", t)
+
+    ## stereo rectification
+    R1, R2, P1, P2, Q, roi1, roi2 = cv2.stereoRectify(
+        cameraMatrix1=INTRINSIC_MATRIX,
+        cameraMatrix2=INTRINSIC_MATRIX,
+        distCoeffs1=None,
+        distCoeffs2=None,
+        imageSize=img0.shape[0:2],
+        R=R,
+        T=t
+    )
+
+    ## warping soon !
 
 if __name__ == '__main__':
     main()
