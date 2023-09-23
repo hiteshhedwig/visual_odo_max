@@ -60,22 +60,12 @@ def feature_matching_with_ransac(images, kp_des_list):
     src_pts = np.float32([kp1[m.queryIdx].pt for m in good_matches])
     dst_pts = np.float32([kp2[m.trainIdx].pt for m in good_matches])
 
-    # Use RANSAC to identify inliers
-    # The fundamental matrix encapsulates the epipolar geometry between two views and is a fundamental concept in stereo vision and structure from motion.
-    _, inliers = cv2.findFundamentalMat(src_pts, dst_pts, cv2.FM_RANSAC)
-
-    # Filter matches using the inliers
-    ransac_matches = [good_matches[i] for i, val in enumerate(inliers) if val == 1]
-
-    # img_matches = cv2.drawMatches(im0, kp1, im1, kp2, ransac_matches, None)
-    # plt.imshow(img_matches)
-    # plt.show()
 
     # Use RANSAC to identify inliers
     # The fundamental matrix encapsulates the epipolar geometry between two views and is a fundamental concept in stereo vision and structure from motion.
     fundamental_mat, inliers = cv2.findFundamentalMat(src_pts, dst_pts, cv2.FM_RANSAC)
     if inliers is None:
-        exit(0)
+        raise ValueError("No matching was found !")
 
     # Filter matches using the inliers
     ransac_matches = [good_matches[i] for i, val in enumerate(inliers) if val == 1]
@@ -181,7 +171,23 @@ def main():
         T=t
     )
 
-    ## warping soon !
+    ## 
+    map1_left, map2_left = cv2.initUndistortRectifyMap(INTRINSIC_MATRIX, None, R1, P1, img0.shape[:2], cv2.CV_16SC2)
+    map1_right, map2_right = cv2.initUndistortRectifyMap(INTRINSIC_MATRIX, None, R2, P2, img1.shape[:2], cv2.CV_16SC2)
+
+
+    #remap 
+    # 
+    rectified_left = cv2.remap(img0, map1_left, map2_left, interpolation=cv2.INTER_LINEAR)
+    rectified_right = cv2.remap(img1, map1_right, map2_right, interpolation=cv2.INTER_LINEAR)
+
+    
+
+    cv2.imshow('Rectified Left Image', rectified_left)
+    cv2.imshow('Rectified Right Image', rectified_right)
+    cv2.waitKey(0)
+    cv2.destroyAllWindows()
+
 
 if __name__ == '__main__':
     main()
