@@ -57,29 +57,60 @@ def get_3d_triangulated_points(K, rot, tra, pts1, pts2):
 
 def validate_cheirality_condition(K, rotations_arr, translation_arr, pt1, pt2):
     for R, t in zip(rotations_arr, translation_arr):
-        print("=======")
+        # print("=======")
         # Triangulate a Point:
         # For each of the four possible (R, t) combinations, triangulate a 3D point using the matched 2D points from the two images.
         Projection_1 = K @ np.hstack([np.eye(3), np.zeros((3, 1))])
 
-        print("R ", R.shape)
-        print("t ", t.shape)
+        # print("R ", R.shape)
+        # print("t ", t.shape)
         Projection_2 = K @ np.hstack([R, t])
 
         # Triangulate using OpenCV
         X_homogeneous = cv2.triangulatePoints(Projection_1, Projection_2, pt1, pt2)
         X = X_homogeneous[:3] / X_homogeneous[3]
 
-        print("Triangulated 3D point:", X)
+        # print("Triangulated 3D point:", X)
         # Check if the point is in front of the first camera
         if X[2] <= 0:
             continue
 
         # Transform the point to the second camera's coordinate system
         X_transformed = R @ X + t
-
+        # print("Transformed 3D point:", X_transformed)
         # Check if the point is in front of the second camera
         if X_transformed[2] > 0:
             return R, t
         
     raise Exception("Couldnt find any valid projection - check your pt1 and pt2 points")
+
+
+def validate_cheirality_condition_all_pts(K, rotations_arr, translation_arr, pts1, pts2):
+    for R, t in zip(rotations_arr, translation_arr):
+        # print("=======")
+        # Triangulate a Point:
+        # For each of the four possible (R, t) combinations, triangulate a 3D point using the matched 2D points from the two images.
+        Projection_1 = K @ np.hstack([np.eye(3), np.zeros((3, 1))])
+
+        # print("R ", R.shape)
+        # print("t ", t.shape)
+        Projection_2 = K @ np.hstack([R, t])
+
+        for pt1, pt2 in zip(pts1, pts2):
+            # Triangulate using OpenCV
+            X_homogeneous = cv2.triangulatePoints(Projection_1, Projection_2, pt1, pt2)
+            X = X_homogeneous[:3] / X_homogeneous[3]
+
+            # print("Triangulated 3D point:", X)
+            # Check if the point is in front of the first camera
+            if X[2] <= 0:
+                continue
+
+            # Transform the point to the second camera's coordinate system
+            X_transformed = R @ X + t
+            # print("Transformed 3D point:", X_transformed)
+            # Check if the point is in front of the second camera
+            if X_transformed[2] > 0:
+                return R, t
+        
+    return None, None
