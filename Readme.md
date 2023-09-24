@@ -17,13 +17,13 @@ I am starting this repo to revisit all the basics and fill in the gaps in my kno
 
 3. Study Epipolar Geometry:
 
-- Get a grasp of concepts like epipolar lines, epipoles, and the essential and fundamental matrices.
-- These concepts are crucial for understanding the geometric relationship between multiple camera views.
+- [**Done**] Get a grasp of concepts like epipolar lines, epipoles, and the essential and fundamental matrices.
+- [**Done**] These concepts are crucial for understanding the geometric relationship between multiple camera views.
 
 4. Hands-on with Basic VO:
 
 - Start with 2-view VO, where you estimate the motion between two consecutive frames.
-- Use feature matching techniques (like SIFT, SURF, ORB) to find correspondences between frames.
+- Use feature matching techniques (alike SIFT, SURF, ORB) to find correspondences between frames.
 - Estimate the relative pose (rotation and translation) between frames.
 
 5. Explore Robust Estimation Techniques:
